@@ -2,13 +2,14 @@
 #include <stdint.h>
 
 #include "lib/load_mnist.h"
+#include "lib/macros.h"
 
-#define DEBUG
 
 int main() {
     puts("Hello world!");
-    uint32_t num1 = 0;
-    printf("num_bits %lu\n", sizeof(num1) * 8);
 
-    
+    open_image_file("data/t10k-images-idx3-ubyte");
+    open_image_file("data/train-images-idx3-ubyte");
+    open_label_file("data/t10k-labels-idx1-ubyte");
+    open_label_file("data/train-labels-idx1-ubyte");
 }

@@ -1,6 +1,9 @@
 #include <stdlib.h>
 
 #include "lib/load_mnist.h"
+#include "lib/macros.h"
+
+#include <unistd.h>
 
 /// Reverse the byte order of a 32 bit integer
 /// This can be done efficiently because we know the size
@@ -34,20 +37,12 @@ void check_image_header(FILE *image_file) {
         exit(1);
     }
 
-#ifdef DEBUG
-    print_image_header(&header);
-#endif
+    DEBUG_PRINT(("Image header:\n"));
+    DEBUG_PRINT(("\tMagic Number: %d\n", header.magic_number));
+    DEBUG_PRINT(("\tNumber of images: %d\n", header.num_images));
+    DEBUG_PRINT(("\tNumber of rows: %d\n", header.num_rows));
+    DEBUG_PRINT(("\tNumber of columns: %d\n", header.num_columns));
 }
-
-#ifdef DEBUG
-void print_image_header(MnistImageHeader* header) {
-    printf("Image header:\n");
-    printf("\tMagic Number: %d\n", header->magic_number);
-    printf("\tNumber of images: %d\n", header->num_images);
-    printf("\tNumber of rows: %d\n", header->num_rows);
-    printf("\tNumber of columns: %d\n", header->num_columns);
-}
-#endif
 
 /// Read and check the header from an open label file
 void check_label_header(FILE *label_file) {
@@ -64,18 +59,10 @@ void check_label_header(FILE *label_file) {
         exit(1);
     }
 
-#ifdef DEBUG
-    print_label_header(&header);
-#endif
+    DEBUG_PRINT(("Label header:\n"));
+    DEBUG_PRINT(("\tMagic Number: %d\n", header.magic_number));
+    DEBUG_PRINT(("\tNumber of Items: %d\n", header.num_items));
 }
-
-#ifdef DEBUG
-void print_label_header(MnistLabelHeader* header) {
-    printf("Label header:\n");
-    printf("\tMagic Number: %d\n", header->magic_number);
-    printf("\tNumber of Items: %d\n", header->num_items);
-}
-#endif
 
 /// Read the next image from the images file
 MnistImage read_image(FILE* image_file) {

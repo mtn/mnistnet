@@ -25,5 +25,6 @@ typedef uint8_t MnistLabel;
 
 
 FILE* open_image_file(char* filename);
+FILE* open_label_file(char* filename);
 
 #endif /* __MNIST_H__ */
