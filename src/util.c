@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "lib/util.h"
+#include "util.h"
 
 /// Return a standard-normal sampled double
 /// Based on the Box-Muller Method

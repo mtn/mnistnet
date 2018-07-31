@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "lib/network.h"
+#include "network.h"
 
 
 

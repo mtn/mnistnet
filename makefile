@@ -1,10 +1,10 @@
 TARGET = nn
 CC = gcc
 DEBUGTARGET = debug
-CFLAGS = -Wall -Wextra -pedantic -std=c99
+CFLAGS = -Wall -Wextra -pedantic -std=c99 -I include/
 
 src = $(wildcard src/*.c)
-lib = $(wildcard src/lib/*.h)
+lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
 debug: clean debug_mode $(obj) $(lib)

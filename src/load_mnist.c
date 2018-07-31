@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "lib/load_mnist.h"
-#include "lib/macros.h"
+#include "load_mnist.h"
+#include "macros.h"
 
 #include <unistd.h>
 

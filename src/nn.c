@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "lib/load_mnist.h"
-#include "lib/network.h"
-#include "lib/macros.h"
-#include "lib/util.h"
+#include "load_mnist.h"
+#include "network.h"
+#include "macros.h"
+#include "util.h"
 
 
 int main() {
