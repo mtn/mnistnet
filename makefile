@@ -7,6 +7,9 @@ src = $(wildcard src/*.c)
 lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
+run: debug
+	./debug
+
 debug: clean debug_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 

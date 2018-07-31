@@ -32,5 +32,9 @@ double stdnormal() {
     return Z;
 }
 
-
-
+/// Initialize an array of doubles with the given initialization function
+void doublearr_init(int len, double* arr, double (*init_fn)()) {
+    for (int i = 0; i < len; i++) {
+        arr[i] = (*init_fn)();
+    }
+}

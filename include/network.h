@@ -6,10 +6,11 @@ typedef struct {
     int* sizes;
     int num_layers;
 
-    int* biases;
-    int* weights;
+    double** biases;
+    double*** weights;
 } Network;
 
-Network* create_network();
+Network* create_network(int num_layers, int sizes[]);
+void free_network(Network* net);
 
 #endif /* __NETWORK_H__ */
