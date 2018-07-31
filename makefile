@@ -8,7 +8,6 @@ lib = $(wildcard src/lib/*.h)
 obj = $(src:.c=.o)
 
 debug: clean debug_mode $(obj) $(lib)
-	echo $(CFLAGS)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
 nn: clean $(obj) $(lib)
