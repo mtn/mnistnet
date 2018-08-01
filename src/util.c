@@ -1,40 +1,39 @@
-#include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 
-/// Return a standard-normal sampled double
-/// Based on the Box-Muller Method
-/// Source: stackoverflow.com/q/5817490/2608433
-double stdnormal() {
-    static double v, fac;
-    static int phase = 0;
-    double S, Z, U1, U2, u;
-
-    if (phase) {
-        Z = v * fac;
-    } else {
-        do {
-            U1 = (double)rand() / RAND_MAX;
-            U2 = (double)rand() / RAND_MAX;
-
-            u = 2. * U1 - 1.;
-            v = 2. * U2 - 1.;
-            S = u * u + v * v;
-        } while (S >= 1);
-
-        fac = sqrt(-2. * log(S) / S);
-        Z = u * fac;
+void doublearr_init(Vector* v, double (*init_fn)()) {
+    for (int i = 0; i < v->len; i++) {
+        v->elem[i] = (*init_fn)();
     }
-
-    phase = 1 - phase;
-
-    return Z;
 }
 
-/// Initialize an array of doubles with the given initialization function
-void doublearr_init(int len, double* arr, double (*init_fn)()) {
-    for (int i = 0; i < len; i++) {
-        arr[i] = (*init_fn)();
-    }
+// TODO check if this is used
+Vector* new_vector(int veclen) {
+    Vector* v = malloc(sizeof(Vector));
+
+    v->len = veclen;
+    v->elem = malloc(veclen * sizeof(double));
+
+    return v;
+}
+
+// TODO check if this is used
+Vector* into_vector(int veclen, double* buffer) {
+    Vector* v = new_vector(veclen);
+
+    memcpy(v->elem, buffer, veclen * sizeof(double));
+
+    return v;
+}
+
+void init_vector(Vector* v, int veclen) {
+    v->elem = malloc(veclen * sizeof(double));
+    v->len = veclen;
+}
+
+// Frees the memory associated with the vector, but not the memory itself
+void free_vector(Vector* v) {
+    free(v->elem);
 }

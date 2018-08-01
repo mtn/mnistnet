@@ -5,6 +5,7 @@
 #include "load_mnist.h"
 #include "network.h"
 #include "macros.h"
+#include "nmath.h"
 #include "util.h"
 
 
@@ -19,6 +20,21 @@ int main() {
     DEBUG_PRINT(("%d %d %d", net->sizes[0], net->sizes[1], net->sizes[2]));
 
     free_network(net);
+
+    /* int veclen = 10; */
+    /* double* test = malloc(sizeof(double) * veclen); */
+
+    /* for (int i = 0; i < veclen; i++) { */
+    /*     test[i] = (double)i; */
+    /* } */
+
+    /* sigmoid_(test, veclen); */
+
+    /* printf("\n"); */
+    /* for (int i = 0; i < veclen; i++) { */
+    /*     printf("%f  ", test[i]); */
+    /* } */
+    /* printf("\n"); */
 
     /* FILE* fp = open_image_file("data/t10k-images-idx3-ubyte"); */
 
