@@ -2,27 +2,27 @@
 #define __UTIL_H__
 
 
-// A vector (in the math sense, not a strechy buffer)
 typedef struct {
-    int len;
+    int num_rows;
+    int num_cols;
+
     double* elem;
-} Vector;
+} Matrix;
 
-// Initialize a vector
-// TODO check if this is used
-Vector* new_vector(int veclen);
-// Take in a buffer and copy its values into a vector
-// The buffer doesn't have to be owned (i.e. it can be on the stack)
-// TODO check if this is actually being used
-Vector* into_vector(int veclen, double* buffer);
-// Create a buffer for an existing vector
-void init_vector(Vector* v, int veclen);
+// Initialize a matrix
+void matrix_init(Matrix* m, int num_rows, int num_cols);
 
-void free_vector(Vector* v);
+// Initialize matrix values using an initialization function (eg. stdnormal)
+// *_ does the modification in place, the normal one involves a new allocation
+Matrix* matrix_map(Matrix* m, double (*map_fn)(double elem));
+void matrix_map_(Matrix* m, double (*map_fn)(double elem));
 
+void matrix_init_buffer(Matrix* m, double (*init_fn)());
 
-// A initializizer for arrays of doubles
-void doublearr_init(Vector* v, double (*init_fn)());
+// Get an index to access a matrix row or column
+int matrix_get_ind(Matrix* m, int row, int col);
+
+void free_matrix(Matrix* m);
 
 
 #endif /* __UTIL_H__ */

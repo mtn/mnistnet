@@ -3,37 +3,40 @@
 
 #include "util.h"
 
-void doublearr_init(Vector* v, double (*init_fn)()) {
-    for (int i = 0; i < v->len; i++) {
-        v->elem[i] = (*init_fn)();
+void matrix_init(Matrix* m, int num_rows, int num_cols) {
+    m->num_rows = num_rows;
+    m->num_cols= num_cols;
+    m->elem = malloc(num_rows * num_cols * sizeof(double));
+}
+
+Matrix* matrix_map(Matrix* m, double (*map_fn)()) {
+    Matrix* new = malloc(sizeof(Matrix));
+    matrix_init(new, m->num_rows, m->num_cols);
+
+    for (int i = 0; i < m->num_rows * m->num_cols; i++) {
+        new->elem[i] = (*map_fn)();
+    }
+
+    return new;
+}
+
+void matrix_map_(Matrix* m, double (*map_fn)(double elem)) {
+    for (int i = 0; i < m->num_rows * m->num_cols; i++) {
+        m->elem[i] = (*map_fn)(m->elem[i]);
     }
 }
 
-// TODO check if this is used
-Vector* new_vector(int veclen) {
-    Vector* v = malloc(sizeof(Vector));
-
-    v->len = veclen;
-    v->elem = malloc(veclen * sizeof(double));
-
-    return v;
+void matrix_init_buffer(Matrix* m, double (*init_fn)()) {
+    for (int i = 0; i < m->num_rows * m->num_cols; i++) {
+        m->elem[i] = (*init_fn)();
+    }
 }
 
-// TODO check if this is used
-Vector* into_vector(int veclen, double* buffer) {
-    Vector* v = new_vector(veclen);
-
-    memcpy(v->elem, buffer, veclen * sizeof(double));
-
-    return v;
+int matrix_get_ind(Matrix* m, int row, int col) {
+    return row * m->num_cols + col;
 }
 
-void init_vector(Vector* v, int veclen) {
-    v->elem = malloc(veclen * sizeof(double));
-    v->len = veclen;
-}
-
-// Frees the memory associated with the vector, but not the memory itself
-void free_vector(Vector* v) {
-    free(v->elem);
+void free_matrix(Matrix* m) {
+    free(m->elem);
+    free(m);
 }

@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
+
+#include "macros.h"
+#include "util.h"
 
 // Return a standard-normal sampled double
 // Based on the Box-Muller Method
@@ -39,11 +43,32 @@ void sigmoid_(double* vec, int veclen) {
     }
 }
 
-// Maps the sigmoid function over a vector (returns a new vector)
+// Maps the sigmoid function over a matrix (returns a new vector)
 double* sigmoid(double* vec, int veclen) {
     double* copy = malloc(veclen * sizeof(double));
     memcpy(copy, vec, veclen * sizeof(double));
 
     sigmoid_(copy, veclen);
     return copy;
+}
+
+Matrix* matrix_multiply(Matrix* a, Matrix* b) {
+    if (a->num_cols != b->num_rows) {
+        printf("Arguments to matrix multiply had incompatible shapes, exiting");
+        DEBUG_PRINT((": %d %d", a->len, b->len));
+        exit(1);
+    }
+
+    Matrix* m = malloc(sizeof(Matrix));
+    matrix_init(m, a->num_rows, b->num_cols);
+
+    /* double dot_sum = 0; */
+
+    /* for (int i = 0; i < a->len; i++) { */
+    /*     dot_sum += a->elem[i] * b->elem[i]; */
+    /* } */
+
+    /* return dot_sum; */
+
+    return m;
 }

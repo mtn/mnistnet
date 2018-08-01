@@ -9,14 +9,15 @@ typedef struct {
     int* sizes;
     int num_layers;
 
-    Vector* biases;
-    /* double** biases; */
-    Vector** weights;
-    /* double*** weights; */
+    // Biases are a set of 1 dimensional matrices (vectors)
+    Matrix* biases;
+    Matrix** weights;
 } Network;
 
 Network* create_network(int num_layers, int sizes[]);
 void free_network(Network* net);
+
+Matrix* feed_forward(Network* net, Matrix* inp);
 
 
 #endif /* __NETWORK_H__ */
