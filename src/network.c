@@ -86,11 +86,15 @@ void free_network(Network* net) {
 
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
-    Matrix* out;
+    for (int i = 0; i < net->num_layers - 1; i++) {
+        Matrix* wa = matrix_multiply(&net->weights[i], inp);
+        matrix_sigmoid_(matrix_add(wa, &net->biases[i]));
 
-    /* for (int i = 0; i < net->num_layers - 1; i++) { */
-    /*     double wa = matrix_multiply(net->weights[i], &net->biases[i]); */
-    /* } */
+        matrix_free(inp);
+        free(inp);
 
-    return out;
+        inp = wa;
+    }
+
+    return inp;
 }

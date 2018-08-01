@@ -21,14 +21,7 @@ int main() {
 
 /*     free_network(net); */
 
-    /* Matrix* m1 = malloc(sizeof(Matrix)); */
-    /* matrix_init(m1, 2, 3); */
-    /* m1->elem[0] = 1; */
-    /* m1->elem[1] = 2; */
-    /* m1->elem[2] = 3; */
-    /* m1->elem[3] = 4; */
-    /* m1->elem[4] = 5; */
-    /* m1->elem[5] = 6; */
+
 
     /* Matrix* m2 = malloc(sizeof(Matrix)); */
     /* matrix_init(m2, 3, 2); */
@@ -40,13 +33,6 @@ int main() {
     /* m2->elem[5] = 12; */
 
     /* printf("\n"); */
-    /* Matrix* m3 = matrix_multiply(m1, m2); */
-    /* for (int i = 0; i < m3->num_rows; i++) { */
-    /*     for (int j = 0; j < m3->num_cols; j++) { */
-    /*         printf("%f ", m3->elem[matrix_get_ind(m3, i, j)]); */
-    /*     } */
-    /*     printf("\n"); */
-    /* } */
     /* printf("\n"); */
 
     /* int veclen = 10; */

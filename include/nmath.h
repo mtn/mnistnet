@@ -15,5 +15,10 @@ double* sigmoid(Matrix* m);
 // Panics on incorrect dimensions
 Matrix* matrix_multiply(Matrix* a, Matrix* b);
 
+Matrix* matrix_add(Matrix* a, Matrix* b);
+
+// Apply the sigmoid function elemntwise, in place
+void matrix_sigmoid_(Matrix* m);
+
 
 #endif /* __NMATH_H__ */

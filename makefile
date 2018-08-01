@@ -1,6 +1,7 @@
 TARGET = nn
 CC = gcc
 DEBUGTARGET = debug
+TESTTARGET = test
 CFLAGS = -Wall -Wextra -pedantic -std=c99 -I include/
 
 src = $(wildcard src/*.c)
@@ -10,15 +11,26 @@ obj = $(src:.c=.o)
 run: debug
 	./debug
 
-debug: clean debug_mode $(obj) $(lib)
+test: clean test_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
-nn: clean $(obj) $(lib)
+debug: clean exe_mode debug_mode $(obj) $(lib)
+	$(CC) -o $@ $(obj) $(CFLAGS)
+
+nn: clean exe_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
 debug_mode:
 	$(eval CFLAGS += -D DEBUG)
 
+exe_mode:
+	$(eval src = $(filter-out src/test.c, $(src)))
+	$(eval obj = $(filter-out src/test.o, $(src)))
+
+test_mode:
+	$(eval src = $(filter-out src/nn.c, $(src)))
+	$(eval obj = $(filter-out src/nn.o, $(src)))
+
 .PHONY: clean
 clean:
-	rm -f $(obj) $(TARGET) $(DEBUGTARGET)
+	rm -f $(obj) $(TARGET) $(DEBUGTARGET) $(TESTTARGET)

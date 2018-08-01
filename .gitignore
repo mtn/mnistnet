@@ -3,3 +3,4 @@ debug
 *.swp
 *.o
 todo.txt
+scratch.c
