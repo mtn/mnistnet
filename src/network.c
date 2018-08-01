@@ -6,6 +6,7 @@
 #include "nmath.h"
 #include "util.h"
 
+
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
@@ -87,7 +88,6 @@ void free_network(Network* net) {
 Matrix* feed_forward(Network* net, Matrix* inp) {
     Matrix* out;
 
-    /* matrix_free(_ */
     /* for (int i = 0; i < net->num_layers - 1; i++) { */
     /*     double wa = matrix_multiply(net->weights[i], &net->biases[i]); */
     /* } */

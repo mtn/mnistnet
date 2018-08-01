@@ -3,6 +3,7 @@
 
 #include "util.h"
 
+
 // Return a standard-normal sampled number (deterministic per-run)
 double stdnormal();
 

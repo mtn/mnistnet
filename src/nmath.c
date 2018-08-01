@@ -6,6 +6,7 @@
 #include "macros.h"
 #include "util.h"
 
+
 // Return a standard-normal sampled double
 // Based on the Box-Muller Method
 // Source: stackoverflow.com/q/5817490/2608433
@@ -66,13 +67,16 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
     Matrix* m = malloc(sizeof(Matrix));
     matrix_init(m, a->num_rows, b->num_cols);
 
-    /* double dot_sum = 0; */
+    for (int i = 0; i < a->num_rows; i++) {
+        for (int j = 0; j < b->num_cols; j++) {
+            m->elem[matrix_get_ind(m, i, j)] = 0;
 
-    /* for (int i = 0; i < a->len; i++) { */
-    /*     dot_sum += a->elem[i] * b->elem[i]; */
-    /* } */
-
-    /* return dot_sum; */
+            for (int k = 0; k < a->num_cols; k++) {
+                m->elem[matrix_get_ind(m, i, j)] += a->elem[matrix_get_ind(a, i, k)]
+                    * b->elem[matrix_get_ind(b, k, j)];
+            }
+        }
+    }
 
     return m;
 }
