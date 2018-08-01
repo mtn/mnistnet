@@ -22,7 +22,9 @@ void matrix_init_buffer(Matrix* m, double (*init_fn)());
 // Get an index to access a matrix row or column
 int matrix_get_ind(Matrix* m, int row, int col);
 
-void free_matrix(Matrix* m);
+// Free the memory owned my m, but not m itself (since a series of matrices could have
+// been allocated contiguously at once)
+void matrix_free(Matrix* m);
 
 
 #endif /* __UTIL_H__ */

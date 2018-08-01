@@ -11,7 +11,7 @@ typedef struct {
 
     // Biases are a set of 1 dimensional matrices (vectors)
     Matrix* biases;
-    Matrix** weights;
+    Matrix* weights;
 } Network;
 
 Network* create_network(int num_layers, int sizes[]);

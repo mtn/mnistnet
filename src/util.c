@@ -36,7 +36,6 @@ int matrix_get_ind(Matrix* m, int row, int col) {
     return row * m->num_cols + col;
 }
 
-void free_matrix(Matrix* m) {
+void matrix_free(Matrix* m) {
     free(m->elem);
-    free(m);
 }

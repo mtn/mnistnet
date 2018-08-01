@@ -55,7 +55,11 @@ double* sigmoid(double* vec, int veclen) {
 Matrix* matrix_multiply(Matrix* a, Matrix* b) {
     if (a->num_cols != b->num_rows) {
         printf("Arguments to matrix multiply had incompatible shapes, exiting");
-        DEBUG_PRINT((": %d %d", a->len, b->len));
+
+        DEBUG_PRINT(("Shapes: (%d, %d) (%d, %d)", a->num_rows, a->num_cols,
+                                                  b->num_rows, b->num_rows));
+        DEBUG_PRINT(("Required that %d == %d", a->num_cols, b->num_rows));
+
         exit(1);
     }
 
