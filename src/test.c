@@ -3,11 +3,20 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
+#include "load_mnist.h"
 #include "network.h"
 #include "macros.h"
 #include "nmath.h"
 #include "util.h"
 
+
+void test_mnist_loader() {
+    FILE* fp = open_image_file("data/t10k-images-idx3-ubyte");
+
+    read_image(fp);
+
+    // No assertions, just check that this runs
+}
 
 void test_network_init() {
     int* sizes = malloc(sizeof(int) * 3);
@@ -79,6 +88,7 @@ void run(void (*test_fn)()) {
 int main () {
     puts("Running tests");
 
+    run(&test_mnist_loader);
     run(&test_network_init);
     run(&test_matrix_multiplication);
 }
