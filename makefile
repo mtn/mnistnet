@@ -8,8 +8,6 @@ src = $(wildcard src/*.c)
 lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
-run: debug
-	./debug
 
 test: clean test_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
@@ -28,6 +26,8 @@ exe_mode:
 	$(eval obj = $(filter-out src/test.o, $(src)))
 
 test_mode:
+	$(eval CFLAGS += -rdynamic)
+	$(eval CFLAGS += -Wno-unused-command-line-argument)
 	$(eval src = $(filter-out src/nn.c, $(src)))
 	$(eval obj = $(filter-out src/nn.o, $(src)))
 

@@ -37,7 +37,7 @@ void init_weights(Network* net) {
     for (int i = 1; i < net->num_layers; i++) {
         DEBUG_PRINT(("Layer %d-%d:\n <\n", i, i + 1));
 
-        matrix_init(&net->weights[i], net->sizes[i - 1], net->sizes[i]);
+        matrix_init(&net->weights[i - 1], net->sizes[i - 1], net->sizes[i]);
         matrix_init_buffer(&net->weights[i], &stdnormal);
 
         for (int j = 0; j < net->sizes[i]; j++) {
@@ -65,7 +65,6 @@ Network* create_network(int num_layers, int sizes[]) {
     return net;
 }
 
-// TODO
 void free_network(Network* net) {
     free(net->sizes);
 
@@ -75,11 +74,12 @@ void free_network(Network* net) {
     }
     free(net->biases);
 
-    free(net->weights);
     // Free the memory associated with each weight matrix
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_free(&net->weights[i]);
     }
+    // Free the memory associated with each weight matrix
+    free(net->weights);
 
     free(net);
 }
