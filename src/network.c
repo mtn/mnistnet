@@ -19,11 +19,7 @@ void init_biases(Network* net) {
         matrix_init(&net->biases[i], net->sizes[i + 1], 1);
         matrix_init_buffer(&net->biases[i], &stdnormal);
 
-        DEBUG_PRINT(("<"));
-        for (int j = 0; j < net->sizes[i + 1] - 1; j++) {
-            DEBUG_PRINT(("%f, ", net->biases[i].elem[j]));
-        }
-        DEBUG_PRINT(("%f>\n", net->biases[i].elem[net->sizes[ i+ 1] - 1]));
+        PRINT_MATRIX(net->biases[i]);
     }
 }
 
@@ -40,18 +36,20 @@ void init_weights(Network* net) {
         matrix_init(&net->weights[i - 1], net->sizes[i - 1], net->sizes[i]);
         matrix_init_buffer(&net->weights[i], &stdnormal);
 
-        for (int j = 0; j < net->sizes[i]; j++) {
-            DEBUG_PRINT(("\t <"));
-            for (int k = 0; k < net->sizes[i - 1] - 1; k++) {
-                DEBUG_PRINT(("%f, ", net->weights[i].elem[matrix_get_ind(&net->weights[i], j, k)]));
-            }
-            DEBUG_PRINT(("%f>\n ", net->weights[i].elem[matrix_get_ind(&net->weights[i],
-                                   j, net->sizes[i - 1] - 1)]));
+        for (int j = 0; j < net->sizes[i - 1]; j++) {
+            PRINT_MATRIX(net->weights[i - 1]);
+            /* DEBUG_PRINT(("\t <")); */
+            /* for (int k = 0; k < net->sizes[i - 1] - 1; k++) { */
+            /*     DEBUG_PRINT(("%f, ", net->weights[i - 1].elem[matrix_get_ind(&net->weights[i - 1], j, k)])); */
+            /* } */
+            /* DEBUG_PRINT(("%f>\n ", net->weights[i - 1].elem[matrix_get_ind(&net->weights[i - 1], */
+            /*                        j, net->sizes[i - 1] - 1)])); */
         }
     }
 
 }
 
+#include <stdio.h>
 Network* create_network(int num_layers, int sizes[]) {
     Network* net = malloc(sizeof(Network));
 
@@ -61,6 +59,7 @@ Network* create_network(int num_layers, int sizes[]) {
 
     init_biases(net);
     init_weights(net);
+    puts("done init weights");
 
     return net;
 }
@@ -88,9 +87,9 @@ void free_network(Network* net) {
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
     for (int i = 0; i < net->num_layers - 1; i++) {
-        printf("%d %d against %d %d\n", (&net->weights[i])->num_rows,
-                (&net->weights[i])->num_cols, inp->num_rows, inp->num_cols);
-        Matrix* wa = matrix_multiply(&net->weights[i], inp);
+        /* printf("%d %d against %d %d\n", (&net->weights[i])->num_rows, */
+        /*         (&net->weights[i])->num_cols, inp->num_rows, inp->num_cols); */
+        Matrix* wa = matrix_multiply(inp, &net->weights[i]);
 
         matrix_free(inp);
         free(inp);

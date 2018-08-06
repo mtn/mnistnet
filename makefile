@@ -9,7 +9,7 @@ lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
 
-test: clean test_mode $(obj) $(lib)
+test: clean debug_mode test_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
 debug: clean exe_mode debug_mode $(obj) $(lib)

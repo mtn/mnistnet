@@ -28,8 +28,10 @@ void test_network_init() {
     sizes[1] = 2;
     sizes[2] = 3;
 
+    puts("Hello");
     Network* net = create_network(3, sizes);
 
+    puts("Hello");
     assert(net->sizes[0] == 1);
     assert(net->sizes[1] == 2);
     assert(net->sizes[2] == 3);
@@ -114,8 +116,7 @@ void run(void (*test_fn)()) {
         exit(1);
     }
 
-    child_pid = fork();
-    if (child_pid == 0) {
+    if ((child_pid = fork()) == 0) {
         while ((dup2(filedes[1], STDOUT_FILENO) == -1) && (errno == EINTR));
         close(filedes[1]);
         close(filedes[0]);
