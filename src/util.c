@@ -30,7 +30,10 @@ void matrix_map_(Matrix* m, double (*map_fn)(double elem)) {
 
 void matrix_init_buffer(Matrix* m, double (*init_fn)()) {
     for (int i = 0; i < m->num_rows * m->num_cols; i++) {
-        m->elem[i] = (*init_fn)();
+        double ret = (*init_fn)();
+        /* DEBUG_PRINT(("initfn return %f", ret)); */
+        m->elem[i] = ret;
+        /* DEBUG_PRINT(("assigned %f", ret)); */
     }
 }
 

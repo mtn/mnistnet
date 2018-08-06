@@ -39,7 +39,7 @@ void test_network_init() {
     free_network(net);
 }
 
-void test_matrix_multiplication() {
+void test_matrix_multiply() {
     Matrix* m1 = malloc(sizeof(Matrix));
     matrix_init(m1, 2, 3);
     m1->elem[0] = 1;
@@ -164,6 +164,6 @@ int main () {
 
     run(&test_mnist_loader);
     run(&test_network_init);
-    run(&test_matrix_multiplication);
+    run(&test_matrix_multiply);
     run(&test_feed_forward);
 }

@@ -7,6 +7,7 @@
 #include "util.h"
 
 
+#include <stdio.h>
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
@@ -19,7 +20,7 @@ void init_biases(Network* net) {
         matrix_init(&net->biases[i], net->sizes[i + 1], 1);
         matrix_init_buffer(&net->biases[i], &stdnormal);
 
-        PRINT_MATRIX(net->biases[i]);
+        PRINT_MATRIX((&net->biases[i]));
     }
 }
 
@@ -29,16 +30,14 @@ void init_weights(Network* net) {
     DEBUG_PRINT(("\nInitializing weights:\n"));
 
     // Each row has a weights matrix
-    net->weights = malloc((net -> num_layers - 1) * sizeof(Matrix));
+    net->weights = malloc((net->num_layers - 1) * sizeof(Matrix));
     for (int i = 1; i < net->num_layers; i++) {
         DEBUG_PRINT(("Layer %d-%d:\n", i, i + 1));
 
         matrix_init(&net->weights[i - 1], net->sizes[i - 1], net->sizes[i]);
-        matrix_init_buffer(&net->weights[i], &stdnormal);
+        matrix_init_buffer(&net->weights[i - 1], &stdnormal);
 
-        for (int j = 0; j < net->sizes[i - 1]; j++) {
-            PRINT_MATRIX(net->weights[i - 1]);
-        }
+        PRINT_MATRIX((&net->weights[i - 1]));
     }
 
 }
@@ -53,7 +52,6 @@ Network* create_network(int num_layers, int sizes[]) {
 
     init_biases(net);
     init_weights(net);
-    puts("done init weights");
 
     return net;
 }
@@ -81,9 +79,9 @@ void free_network(Network* net) {
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
     for (int i = 0; i < net->num_layers - 1; i++) {
-        /* printf("%d %d against %d %d\n", (&net->weights[i])->num_rows, */
-        /*         (&net->weights[i])->num_cols, inp->num_rows, inp->num_cols); */
-        Matrix* wa = matrix_multiply(inp, &net->weights[i]);
+        DEBUG_PRINT(("\tShape of : (%d, %d)\n", inp->num_rows, inp->num_cols));
+        Matrix* wa = matrix_multiply(&net->weights[i], inp);
+        puts("Hi");
 
         matrix_free(inp);
         free(inp);

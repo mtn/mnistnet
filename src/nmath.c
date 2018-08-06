@@ -11,6 +11,8 @@
 // Based on the Box-Muller Method
 // Source: stackoverflow.com/q/5817490/2608433
 double stdnormal() {
+    /* DEBUG_PRINT(("Called stdnormal\n")); */
+
     static double v, fac;
     static int phase = 0;
     double S, Z, U1, U2, u;
@@ -33,6 +35,7 @@ double stdnormal() {
 
     phase = 1 - phase;
 
+    /* DEBUG_PRINT(("stdnormal: returning %f", Z)); */
     return Z;
 }
 
@@ -61,7 +64,7 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
         puts("Arguments to matrix multiply had incompatible shapes, exiting");
 
         DEBUG_PRINT(("\tShapes: (%d, %d) (%d, %d)\n", a->num_rows, a->num_cols,
-                                                      b->num_rows, b->num_rows));
+                                                      b->num_rows, b->num_cols));
         DEBUG_PRINT(("\tRequired that %d == %d\n", a->num_cols, b->num_rows));
 
         exit(1);
@@ -89,7 +92,7 @@ Matrix* matrix_add(Matrix* a, Matrix* b) {
         puts("Arguments to matrix add had incompatible shapes, exiting");
 
         DEBUG_PRINT(("\tShapes: (%d, %d) (%d, %d)\n", a->num_rows, a->num_cols,
-                                                      b->num_rows, b->num_rows));
+                                                      b->num_rows, b->num_cols));
         DEBUG_PRINT(("\tRequired that %d == %d, %d == %d\n", a->num_cols, b->num_cols,
                                                              a->num_rows, b->num_rows));
 
