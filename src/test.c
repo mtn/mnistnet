@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
@@ -16,6 +17,7 @@ void test_mnist_loader() {
     read_image(fp);
 
     // No assertions, just check that this runs
+    // Magic numbers are checked normally at runtime
 }
 
 void test_network_init() {
@@ -71,7 +73,32 @@ void test_matrix_multiplication() {
     assert(m3->elem[3] == 154);
 }
 
+void test_feed_forward() {
+    int* sizes = malloc(sizeof(int) * 3);
+
+    sizes[0] = 3;
+    sizes[1] = 2;
+    sizes[2] = 3;
+
+    Network* net = create_network(3, sizes);
+
+    Matrix* inp = malloc(sizeof(Matrix));
+    matrix_init(inp, 1, 3);
+
+    inp->elem[0] = 1;
+    inp->elem[2] = 1;
+    inp->elem[3] = 1;
+
+    Matrix* out = feed_forward(net, inp);
+
+    // No assertions, just check if this runs
+
+    free(out);
+    free_network(net);
+}
+
 void run(void (*test_fn)()) {
+    pid_t child_pid;
     Dl_info info;
 
     int result = dladdr((const void*)test_fn, &info);
@@ -80,9 +107,18 @@ void run(void (*test_fn)()) {
         exit(1);
     }
 
-    test_fn();
+    child_pid = fork();
+    if (child_pid == 0) {
+        test_fn();
+        exit(0);
+    } else {
+        int status = 0;
+        // Wait for the child process to terminate
+        waitpid(child_pid, &status, 0);
 
-    printf("Test %s succeeded!\n", info.dli_sname);
+        printf("Test %s %s!\n", info.dli_sname,
+                status == 0 ? "succeded" : "failed");
+    }
 }
 
 int main () {
@@ -91,4 +127,5 @@ int main () {
     run(&test_mnist_loader);
     run(&test_network_init);
     run(&test_matrix_multiplication);
+    run(&test_feed_forward);
 }

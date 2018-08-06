@@ -84,17 +84,30 @@ void free_network(Network* net) {
     free(net);
 }
 
+#include <stdio.h>
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
     for (int i = 0; i < net->num_layers - 1; i++) {
+        printf("%d %d against %d %d\n", (&net->weights[i])->num_rows,
+                (&net->weights[i])->num_cols, inp->num_rows, inp->num_cols);
         Matrix* wa = matrix_multiply(&net->weights[i], inp);
-        matrix_sigmoid_(matrix_add(wa, &net->biases[i]));
 
         matrix_free(inp);
         free(inp);
+
+        Matrix* wab = matrix_add(wa, &net->biases[i]);
+
+        matrix_free(wa);
+        free(wa);
+
+        matrix_sigmoid_(wab);
 
         inp = wa;
     }
 
     return inp;
+}
+
+// Mini-batch stochastic gradient descent
+void stochastic_gradient_descent(int mini_batch_size) {
 }

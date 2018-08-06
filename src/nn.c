@@ -11,4 +11,8 @@
 
 int main() {
     puts("Hello world!");
+
+/*     int* sizes = malloc(3 * sizeof(int)); */
+/*     sizes[0] = sizes[1] = sizes[2] = 1; */
+/*     Network* net = create_network(3, sizes); */
 }
