@@ -79,18 +79,18 @@ void test_matrix_multiplication() {
 void test_feed_forward() {
     int* sizes = malloc(sizeof(int) * 3);
 
-    sizes[0] = 3;
+    sizes[0] = 1;
     sizes[1] = 2;
     sizes[2] = 3;
 
     Network* net = create_network(3, sizes);
 
     Matrix* inp = malloc(sizeof(Matrix));
-    matrix_init(inp, 1, 3);
+    matrix_init(inp, 1, 1);
 
     inp->elem[0] = 1;
-    inp->elem[2] = 1;
-    inp->elem[3] = 1;
+    /* inp->elem[2] = 1; */
+    /* inp->elem[3] = 1; */
 
     Matrix* out = feed_forward(net, inp);
 

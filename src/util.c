@@ -4,6 +4,7 @@
 #include "util.h"
 
 
+#include "macros.h"
 void matrix_init(Matrix* m, int num_rows, int num_cols) {
     m->num_rows = num_rows;
     m->num_cols= num_cols;

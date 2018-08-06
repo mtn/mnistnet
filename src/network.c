@@ -31,19 +31,13 @@ void init_weights(Network* net) {
     // Each row has a weights matrix
     net->weights = malloc((net -> num_layers - 1) * sizeof(Matrix));
     for (int i = 1; i < net->num_layers; i++) {
-        DEBUG_PRINT(("Layer %d-%d:\n <\n", i, i + 1));
+        DEBUG_PRINT(("Layer %d-%d:\n", i, i + 1));
 
         matrix_init(&net->weights[i - 1], net->sizes[i - 1], net->sizes[i]);
         matrix_init_buffer(&net->weights[i], &stdnormal);
 
         for (int j = 0; j < net->sizes[i - 1]; j++) {
             PRINT_MATRIX(net->weights[i - 1]);
-            /* DEBUG_PRINT(("\t <")); */
-            /* for (int k = 0; k < net->sizes[i - 1] - 1; k++) { */
-            /*     DEBUG_PRINT(("%f, ", net->weights[i - 1].elem[matrix_get_ind(&net->weights[i - 1], j, k)])); */
-            /* } */
-            /* DEBUG_PRINT(("%f>\n ", net->weights[i - 1].elem[matrix_get_ind(&net->weights[i - 1], */
-            /*                        j, net->sizes[i - 1] - 1)])); */
         }
     }
 
