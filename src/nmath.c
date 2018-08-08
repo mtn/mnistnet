@@ -11,8 +11,6 @@
 // Based on the Box-Muller Method
 // Source: stackoverflow.com/q/5817490/2608433
 double stdnormal() {
-    /* DEBUG_PRINT(("Called stdnormal\n")); */
-
     static double v, fac;
     static int phase = 0;
     double S, Z, U1, U2, u;
@@ -35,13 +33,16 @@ double stdnormal() {
 
     phase = 1 - phase;
 
-    /* DEBUG_PRINT(("stdnormal: returning %f", Z)); */
     return Z;
 }
 
-
 double sigmoid(double x) {
     return 1.0 / (1.0 + exp(-x));
+}
+
+// Wrapper around scalar multiplication, for mapping purposes
+double scalar_multiply(double a, double b) {
+    return a * b;
 }
 
 // Elementwise sigmoid function that modifies a vector in place
@@ -49,17 +50,18 @@ void matrix_sigmoid_(Matrix* m) {
     matrix_map_(m, &sigmoid);
 }
 
-// Maps the sigmoid function over a matrix (returns a new vector)
-/* Matrix* sigmoid(Matrix* m) { */
-/*     Matrix* copy = */ 
-/*     double* copy = malloc(veclen * sizeof(Matrix)); */
-/*     memcpy(copy, vec, veclen * sizeof(double)); */
+Matrix* matrix_scalar_multiply(Matrix* m, Matrix* b, double scalar) {
+    matrix_init(m, b->num_rows, b->num_cols);
 
-/*     sigmoid_(copy, veclen); */
-/*     return copy; */
-/* } */
+    for (int i = 0; i < m->num_rows * m->num_cols; i++) {
+        m->elem[i] = b->elem[i] * scalar;
+    }
+
+    return m;
+}
 
 Matrix* matrix_multiply(Matrix* a, Matrix* b) {
+    // Should never be triggered, since matrix_multiply is only called internally
     if (a->num_cols != b->num_rows) {
         puts("Arguments to matrix multiply had incompatible shapes, exiting");
 
@@ -86,6 +88,22 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
 
     return m;
 }
+
+Matrix* matrix_dot(Matrix* a, Matrix* b) {
+    Matrix* m = malloc(sizeof(Matrix));
+
+    // If a or b is 1-D, equivalent to mapping scalar multiplication
+    if (a->num_rows == 1 && a->num_cols == 1) {
+        return matrix_scalar_multiply(m, b, a->elem[0]);
+    } else if (b->num_rows == 1 && b->num_cols == 1) {
+        return matrix_scalar_multiply(m, a, b->elem[0]);
+    }
+
+    return matrix_multiply(a, b);
+
+    exit(1);
+}
+
 
 Matrix* matrix_add(Matrix* a, Matrix* b) {
     if (a->num_cols != b->num_cols || a->num_rows != b->num_rows) {

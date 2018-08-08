@@ -11,7 +11,7 @@
         for (int __print_j = 0; __print_j < m->num_cols; __print_j++) { \
             DEBUG_PRINT(("%f, ", m->elem[__print_i * (m)->num_cols + __print_j])); \
             if (__print_j == m->num_cols - 1) { \
-                DEBUG_PRINT(("\n", m->elem[__print_i * __print_j - 1])); \
+                DEBUG_PRINT(("\n")); \
                 if (__print_i != m->num_rows - 1) { \
                     DEBUG_PRINT(("\t")); \
                 } \

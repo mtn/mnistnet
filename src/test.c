@@ -66,7 +66,7 @@ void test_matrix_multiply() {
     assert(m2->num_rows == 3);
     assert(m2->num_cols == 2);
 
-    Matrix* m3 = matrix_multiply(m1, m2);
+    Matrix* m3 = matrix_dot(m1, m2);
 
     assert(m3->num_rows == 2);
     assert(m3->num_cols == 2);
@@ -74,6 +74,36 @@ void test_matrix_multiply() {
     assert(m3->elem[1] == 64);
     assert(m3->elem[2] == 139);
     assert(m3->elem[3] == 154);
+}
+
+void test_matrix_times_scalar() {
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 2, 3);
+    m1->elem[0] = 1;
+    m1->elem[1] = 2;
+    m1->elem[2] = 3;
+    m1->elem[3] = 4;
+    m1->elem[4] = 5;
+    m1->elem[5] = 6;
+
+    assert(m1 != NULL);
+    assert(m1->num_rows == 2);
+    assert(m1->num_cols == 3);
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 1, 1);
+    m2->elem[0] = 2;
+
+    Matrix* m3 = matrix_dot(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 3);
+    assert(m3->elem[0] == 2);
+    assert(m3->elem[1] == 4);
+    assert(m3->elem[2] == 6);
+    assert(m3->elem[3] == 8);
+    assert(m3->elem[4] == 10);
+    assert(m3->elem[5] == 12);
 }
 
 void test_feed_forward() {
@@ -165,5 +195,6 @@ int main () {
     run(&test_mnist_loader);
     run(&test_network_init);
     run(&test_matrix_multiply);
+    run(&test_matrix_times_scalar);
     run(&test_feed_forward);
 }
