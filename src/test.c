@@ -28,15 +28,50 @@ void test_network_init() {
     sizes[1] = 2;
     sizes[2] = 3;
 
-    puts("Hello");
     Network* net = create_network(3, sizes);
 
-    puts("Hello");
     assert(net->sizes[0] == 1);
     assert(net->sizes[1] == 2);
     assert(net->sizes[2] == 3);
 
     free_network(net);
+}
+
+void test_matrix_inner_product() {
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 1, 3);
+    m1->elem[0] = 1;
+    m1->elem[1] = 1;
+    m1->elem[2] = 1;
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 3, 1);
+    m2->elem[0] = 1;
+    m2->elem[1] = 1;
+    m2->elem[2] = 1;
+
+    Matrix* m3 = matrix_multiply(m1, m2);
+
+    assert(m3->num_cols = 1);
+    assert(m3->num_rows = 1);
+    assert(m3->elem[0] == 3);
+}
+
+void test_matrix_inner_product_fail() {
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 1, 3);
+    m1->elem[0] = 1;
+    m1->elem[1] = 1;
+    m1->elem[2] = 1;
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 1, 3);
+    m2->elem[0] = 1;
+    m2->elem[1] = 1;
+    m2->elem[2] = 1;
+
+    // Expected failure with exit status 1
+    matrix_multiply(m1, m2);
 }
 
 void test_matrix_multiply() {
@@ -76,7 +111,7 @@ void test_matrix_multiply() {
     assert(m3->elem[3] == 154);
 }
 
-void test_matrix_times_scalar() {
+void test_matrix_times_scalar_right() {
     Matrix* m1 = malloc(sizeof(Matrix));
     matrix_init(m1, 2, 3);
     m1->elem[0] = 1;
@@ -93,6 +128,36 @@ void test_matrix_times_scalar() {
     Matrix* m2 = malloc(sizeof(Matrix));
     matrix_init(m2, 1, 1);
     m2->elem[0] = 2;
+
+    Matrix* m3 = matrix_dot(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 3);
+    assert(m3->elem[0] == 2);
+    assert(m3->elem[1] == 4);
+    assert(m3->elem[2] == 6);
+    assert(m3->elem[3] == 8);
+    assert(m3->elem[4] == 10);
+    assert(m3->elem[5] == 12);
+}
+
+void test_matrix_times_scalar_left() {
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 2, 3);
+    m2->elem[0] = 1;
+    m2->elem[1] = 2;
+    m2->elem[2] = 3;
+    m2->elem[3] = 4;
+    m2->elem[4] = 5;
+    m2->elem[5] = 6;
+
+    assert(m2 != NULL);
+    assert(m2->num_rows == 2);
+    assert(m2->num_cols == 3);
+
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 1, 1);
+    m1->elem[0] = 2;
 
     Matrix* m3 = matrix_dot(m1, m2);
     assert(m3 != NULL);
@@ -130,7 +195,8 @@ void test_feed_forward() {
     free_network(net);
 }
 
-void run(void (*test_fn)()) {
+// Run, expecting a exit failure
+void run_return(void (*test_fn)(), int expected_return) {
     pid_t child_pid;
     Dl_info info;
 
@@ -162,12 +228,14 @@ void run(void (*test_fn)()) {
     int status = 0;
     // Wait for the child process to terminate
     waitpid(child_pid, &status, 0);
+    int exit_status = WEXITSTATUS(status);
 
     printf("Test %s %s!\n", info.dli_sname,
-            status == 0 ? "succeded" : "failed");
+            exit_status == expected_return ? "succeded" : "failed");
 
     // Dump output from stdout of failed processes
-    if (status != 0) {
+    if (exit_status != expected_return) {
+        printf("Expected return code %d, got %d\n", expected_return, status);
         char output_buffer[4096];
         while (true) {
             ssize_t count = read(filedes[0], output_buffer, sizeof(output_buffer));
@@ -187,6 +255,11 @@ void run(void (*test_fn)()) {
     }
 
     close(filedes[0]);
+
+}
+
+void run(void (*test_fn)()) {
+    run_return(test_fn, 0);
 }
 
 int main () {
@@ -194,7 +267,10 @@ int main () {
 
     run(&test_mnist_loader);
     run(&test_network_init);
+    run(&test_matrix_inner_product);
+    run_return(&test_matrix_inner_product_fail, 1);
     run(&test_matrix_multiply);
-    run(&test_matrix_times_scalar);
-    run(&test_feed_forward);
+    run(&test_matrix_times_scalar_right);
+    run(&test_matrix_times_scalar_left);
+    /* run(&test_feed_forward); */
 }

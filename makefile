@@ -11,6 +11,7 @@ obj = $(src:.c=.o)
 
 test: clean debug_mode test_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
+	./test
 
 debug: clean exe_mode debug_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
