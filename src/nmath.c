@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -104,9 +105,26 @@ Matrix* matrix_dot(Matrix* a, Matrix* b) {
     exit(1);
 }
 
+int compute_broadcast_index(Matrix* m, int i, int j) {
+    if (m->num_rows == 1) {
+        if (m->num_cols == 1) {
+            return m->elem[0];
+        } else {
+            return m->elem[j - 1];
+        }
+    } else {
+        if (m->num_cols == 1) {
+            return m->elem[i - 1];
+        } else {
+            return m->elem[matrix_get_ind(m, i, j)];
+        }
+    }
+}
 
 Matrix* matrix_add(Matrix* a, Matrix* b) {
-    if (a->num_cols != b->num_cols || a->num_rows != b->num_rows) {
+    bool cols_compatible = a->num_cols == b->num_cols || a->num_cols == 1 || b->num_cols == 1;
+    bool rows_compatible = a->num_rows == b->num_rows || a->num_rows == 1 || b->num_rows == 1;
+    if (!cols_compatible || !rows_compatible) {
         puts("Arguments to matrix add had incompatible shapes, exiting");
 
         DEBUG_PRINT(("\tShapes: (%d, %d) (%d, %d)\n", a->num_rows, a->num_cols,
@@ -117,13 +135,17 @@ Matrix* matrix_add(Matrix* a, Matrix* b) {
         exit(1);
     }
 
-    Matrix* m = malloc(sizeof(Matrix));
-    matrix_init(m, a->num_rows, a->num_cols);
+    // Since we know the matrix was broadcast-safe, we can just take the max
+    int num_rows = MAX(a->num_rows, b->num_rows);
+    int num_cols = MAX(a->num_cols, b->num_cols);
 
-    for (int i = 0; i < a->num_rows; i++) {
-        for (int j = 0; j < a->num_cols; j++) {
-            m->elem[matrix_get_ind(m, i, j)] = a->elem[matrix_get_ind(a, i, j)]
-                + b->elem[matrix_get_ind(b, i, j)];
+    Matrix* m = malloc(sizeof(Matrix));
+    matrix_init(m, num_rows, num_cols);
+
+    for (int i = 0; i < num_rows; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            m->elem[matrix_get_ind(m, i, j)] = compute_broadcast_index(a, i, j)
+                + compute_broadcast_index(b, i, j);
         }
     }
 

@@ -171,6 +171,104 @@ void test_matrix_times_scalar_left() {
     assert(m3->elem[5] == 12);
 }
 
+void test_matrix_add_same_dimensions() {
+    Matrix* m = malloc(sizeof(Matrix));
+    matrix_init(m, 2, 2);
+    m->elem[0] = 1;
+    m->elem[1] = 2;
+    m->elem[2] = 3;
+    m->elem[3] = 4;
+
+    // There shouldn't be problems with memory due to passing the same matrix
+    Matrix* m1 = matrix_add(m, m);
+    assert(m1 != NULL);
+    assert(m1->num_rows == 2);
+    assert(m1->num_cols == 2);
+    assert(m1->elem[0] = 2);
+    assert(m1->elem[1] = 4);
+    assert(m1->elem[2] = 6);
+    assert(m1->elem[3] = 8);
+}
+
+void test_matrix_add_broadcasting_y_axis() {
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 3;
+    m1->elem[2] = 5;
+    m1->elem[3] = 7;
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 2, 1);
+    m2->elem[0] = 1;
+    m2->elem[1] = 2;
+
+    Matrix* m3 = matrix_add(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 2);
+    assert(m3->elem[0] = 2);
+    assert(m3->elem[1] = 5);
+    assert(m3->elem[2] = 6);
+    assert(m3->elem[3] = 9);
+}
+
+void test_matrix_add_broadcasting_x_axis() {
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 3;
+    m1->elem[2] = 5;
+    m1->elem[3] = 7;
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 1, 2);
+    m2->elem[0] = 1;
+    m2->elem[1] = 2;
+
+    Matrix* m3 = matrix_add(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 2);
+    assert(m3->elem[0] = 1);
+    assert(m3->elem[1] = 4);
+    assert(m3->elem[2] = 7);
+    assert(m3->elem[3] = 9);
+}
+
+void test_matrix_add_broadcasting_both_axes() {
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 2;
+    m1->elem[2] = 3;
+    m1->elem[3] = 4;
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m2, 1, 1);
+    m2->elem[0] = 1;
+
+    Matrix* m3 = matrix_add(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 2);
+    assert(m3->elem[0] = 2);
+    assert(m3->elem[1] = 3);
+    assert(m3->elem[2] = 4);
+    assert(m3->elem[3] = 5);
+}
+
+void test_matrix_add_incompatible_dimensions() {
+    // Doesn't bother intializing values, since our failure doesn't depend on them
+    Matrix* m1 = malloc(sizeof(Matrix));
+    matrix_init(m1, 2, 2);
+
+    Matrix* m2 = malloc(sizeof(Matrix));
+    matrix_init(m1, 3, 3);
+
+    matrix_add(m1, m2);
+}
+
 void test_feed_forward() {
     int* sizes = malloc(sizeof(int) * 3);
 
@@ -183,7 +281,7 @@ void test_feed_forward() {
     Matrix* inp = malloc(sizeof(Matrix));
     matrix_init(inp, 1, 1);
 
-    inp->elem[0] = 1;
+   inp->elem[0] = 1;
     /* inp->elem[2] = 1; */
     /* inp->elem[3] = 1; */
 
@@ -235,7 +333,7 @@ void run_return(void (*test_fn)(), int expected_return) {
 
     // Dump output from stdout of failed processes
     if (exit_status != expected_return) {
-        printf("Expected return code %d, got %d\n", expected_return, status);
+        printf("Expected return code %d, got %d\n", expected_return, exit_status);
         char output_buffer[4096];
         while (true) {
             ssize_t count = read(filedes[0], output_buffer, sizeof(output_buffer));
@@ -272,5 +370,10 @@ int main () {
     run(&test_matrix_multiply);
     run(&test_matrix_times_scalar_right);
     run(&test_matrix_times_scalar_left);
-    /* run(&test_feed_forward); */
+    run(&test_matrix_add_same_dimensions);
+    run(&test_matrix_add_broadcasting_x_axis);
+    run(&test_matrix_add_broadcasting_y_axis);
+    run(&test_matrix_add_broadcasting_both_axes);
+    run_return(&test_matrix_add_incompatible_dimensions, 1);
+    run(&test_feed_forward);
 }

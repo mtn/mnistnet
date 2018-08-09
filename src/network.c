@@ -79,9 +79,7 @@ void free_network(Network* net) {
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
     for (int i = 0; i < net->num_layers - 1; i++) {
-        DEBUG_PRINT(("\tShape of : (%d, %d)\n", inp->num_rows, inp->num_cols));
-        Matrix* wa = matrix_multiply(&net->weights[i], inp);
-        puts("Hi");
+        Matrix* wa = matrix_dot(&net->weights[i], inp);
 
         matrix_free(inp);
         free(inp);
