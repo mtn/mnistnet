@@ -1,8 +1,9 @@
-TARGET = nn
 CC = gcc
+CFLAGS = -Wall -Wextra -pedantic -std=c99 -I include/
+
+TARGET = mnistnet
 DEBUGTARGET = debug
 TESTTARGET = test
-CFLAGS = -Wall -Wextra -pedantic -std=c99 -I include/
 
 src = $(wildcard src/*.c)
 lib = $(wildcard include/*.h)
@@ -16,7 +17,7 @@ test: clean debug_mode test_mode $(obj) $(lib)
 debug: clean exe_mode debug_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
-nn: clean exe_mode $(obj) $(lib)
+mnistnet: clean exe_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
 debug_mode:
@@ -29,9 +30,9 @@ exe_mode:
 test_mode:
 	$(eval CFLAGS += -rdynamic)
 	$(eval CFLAGS += -Wno-unused-command-line-argument)
-	$(eval src = $(filter-out src/nn.c, $(src)))
-	$(eval obj = $(filter-out src/nn.o, $(src)))
+	$(eval src = $(filter-out src/mnistnet.c, $(src)))
+	$(eval obj = $(filter-out src/mnistnet.o, $(obj)))
 
 .PHONY: clean
 clean:
-	rm -f $(obj) $(TARGET) $(DEBUGTARGET) $(TESTTARGET)
+	rm -rf $(obj) $(TARGET) $(DEBUGTARGET) $(TESTTARGET)
