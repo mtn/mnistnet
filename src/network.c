@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "load_mnist.h"
 #include "network.h"
 #include "macros.h"
 #include "nmath.h"

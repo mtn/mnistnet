@@ -1,9 +1,33 @@
 #include <stdlib.h>
+#include <assert.h>
 
-#include "load_mnist.h"
+#include "mnist.h"
 #include "macros.h"
 
-#include <unistd.h>
+
+typedef struct {
+    uint32_t magic_number;
+    uint32_t num_images;
+
+    uint32_t num_rows;
+    uint32_t num_columns;
+} MnistImageHeader;
+
+typedef struct {
+    uint32_t magic_number;
+    uint32_t num_items;
+} MnistLabelHeader;
+
+typedef struct {
+    FILE* fp;
+    MnistLabelHeader header;
+} MnistLabelFile;
+
+typedef struct {
+    FILE* fp;
+    MnistImageHeader header;
+} MnistImageFile;
+
 
 /// Reverse the byte order of a 32 bit integer
 /// This can be done efficiently because we know the size
@@ -17,7 +41,7 @@ uint32_t reverse_int(uint32_t i) {
 }
 
 /// Read the header from an open image file
-void check_image_header(FILE *image_file) {
+MnistImageHeader check_image_header(FILE *image_file) {
     MnistImageHeader header;
 
     fread(&header.magic_number, 4, 1, image_file);
@@ -42,10 +66,12 @@ void check_image_header(FILE *image_file) {
     DEBUG_PRINT(("\tNumber of images: %d\n", header.num_images));
     DEBUG_PRINT(("\tNumber of rows: %d\n", header.num_rows));
     DEBUG_PRINT(("\tNumber of columns: %d\n", header.num_columns));
+
+    return header;
 }
 
 /// Read and check the header from an open label file
-void check_label_header(FILE *label_file) {
+MnistLabelHeader check_label_header(FILE *label_file) {
     MnistLabelHeader header;
 
     fread(&header.magic_number, 4, 1, label_file);
@@ -62,14 +88,16 @@ void check_label_header(FILE *label_file) {
     DEBUG_PRINT(("Label header:\n"));
     DEBUG_PRINT(("\tMagic Number: %d\n", header.magic_number));
     DEBUG_PRINT(("\tNumber of Items: %d\n", header.num_items));
+
+    return header;
 }
 
 /// Read the next image from the images file
-MnistImage read_image(FILE* image_file) {
+MnistImage read_image(MnistImageFile* image_file) {
     MnistImage img;
 
     // Because the struct has only one field, we can read directly into it
-    int res = fread(&img, sizeof(MnistImage), 1, image_file);
+    int res = fread(&img, sizeof(MnistImage), 1, image_file->fp);
     if (res != 1) {
         puts("Error reading image from file");
         exit(1);
@@ -79,12 +107,12 @@ MnistImage read_image(FILE* image_file) {
 }
 
 /// Read the next label from the labels file
-MnistLabel read_label(FILE* label_file) {
+MnistLabel read_label(MnistLabelFile* label_file) {
     MnistLabel label;
 
-    size_t res = fread(&label, sizeof(MnistLabel), 1, label_file);
+    size_t res = fread(&label, sizeof(MnistLabel), 1, label_file->fp);
     if (res != 1) {
-        puts("Failued while reading from label file");
+        puts("Failed while reading from label file");
         exit(1);
     }
 
@@ -94,7 +122,7 @@ MnistLabel read_label(FILE* label_file) {
 /// Opens the file and checks for the expected magic number
 /// This advances the read pointer past the header, so as long
 /// as the magic number is correct we can immediately start reading
-FILE* open_label_file(char* filename) {
+MnistLabelFile open_label_file(char* filename) {
     FILE* label_file = fopen(filename, "rb");
     if (label_file == NULL) {
         printf("Failed to open label file %s\n", filename);
@@ -102,12 +130,12 @@ FILE* open_label_file(char* filename) {
     }
 
     // Check the label header, advancing the file pointer past the header
-    check_label_header(label_file);
+    MnistLabelHeader header = check_label_header(label_file);
 
-    return label_file;
+    return (MnistLabelFile){ .fp = label_file, .header = header };
 }
 
-FILE* open_image_file(char* filename) {
+MnistImageFile open_image_file(char* filename) {
     FILE* image_file = fopen(filename, "rb");
     if (image_file == NULL) {
         printf("Failed to open label file %s\n", filename);
@@ -115,7 +143,30 @@ FILE* open_image_file(char* filename) {
     }
 
     // Check the image header, advancing the file pointer
-    check_image_header(image_file);
+    MnistImageHeader header = check_image_header(image_file);
 
-    return image_file;
+    return (MnistImageFile){ .fp = image_file, .header = header };
+}
+
+void init_data(MnistData* data, int count) {
+    data->count = count;
+    data->images = malloc(count * sizeof(MnistImage));
+    data->labels = malloc(count * sizeof(MnistLabel));
+}
+
+MnistData* load_data(char* label_filename, char* image_filename) {
+    MnistData* data = malloc(sizeof(MnistData));
+
+    MnistLabelFile label_file = open_label_file(label_filename);
+    MnistImageFile image_file = open_image_file(image_filename);
+
+    assert(label_file.header.num_items == image_file.header.num_images);
+    init_data(data, label_file.header.num_items);
+
+    for (int i = 0; i < data->count; i++) {
+        data->labels[i] = read_label(&label_file);
+        data->images[i] = read_image(&image_file);
+    }
+
+    return data;
 }
