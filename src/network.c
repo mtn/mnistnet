@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "load_mnist.h"
 #include "network.h"
 #include "macros.h"
 #include "nmath.h"
@@ -79,17 +80,15 @@ void free_network(Network* net) {
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
     for (int i = 0; i < net->num_layers - 1; i++) {
-        printf("Matrix dot: (%d, %d) x (%d, %d)\n", *&net->weights[i].num_rows, *&net->weights[i].num_cols, inp->num_rows, inp->num_cols);
         Matrix* wa = matrix_dot(&net->weights[i], inp);
-        printf("Output shape: (%d, %d)\n", wa->num_rows, wa->num_cols);
+        DEBUG_PRINT(("w * a: \n"));
         PRINT_MATRIX(wa);
 
         matrix_free(inp);
         free(inp);
 
-        printf("Matrix add: (%d, %d) x (%d, %d)\n", wa->num_rows, wa->num_cols, *&net->biases[i].num_rows, *&net->biases[i].num_cols);
         Matrix* wab = matrix_add(wa, &net->biases[i]);
-        printf("Output shape: (%d, %d)\n", wab->num_rows, wab->num_cols);
+        DEBUG_PRINT(("wa + b\n"));
         PRINT_MATRIX(wab);
 
         matrix_free(wa);
@@ -104,5 +103,6 @@ Matrix* feed_forward(Network* net, Matrix* inp) {
 }
 
 // Mini-batch stochastic gradient descent
-void stochastic_gradient_descent(int mini_batch_size) {
+void stochastic_gradient_descent(int mini_batch_size, int num_epoch) {
+
 }

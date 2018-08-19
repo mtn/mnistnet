@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -std=c99 -I include/
+CFLAGS = -Wall -Wextra -Wno-gnu-statement-expression -pedantic -std=c99 -I include/
 
 TARGET = mnistnet
 DEBUGTARGET = debug

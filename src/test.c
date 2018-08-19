@@ -11,6 +11,8 @@
 #include "nmath.h"
 #include "util.h"
 
+#define TESTVERBOSE false
+
 
 void test_mnist_loader() {
     FILE* fp = open_image_file("data/t10k-images-idx3-ubyte");
@@ -334,6 +336,9 @@ void run_return(void (*test_fn)(), int expected_return) {
     // Dump output from stdout of failed processes
     if (exit_status != expected_return) {
         printf("Expected return code %d, got %d\n", expected_return, exit_status);
+    }
+
+    if (exit_status != expected_return || TESTVERBOSE) {
         char output_buffer[4096];
         while (true) {
             ssize_t count = read(filedes[0], output_buffer, sizeof(output_buffer));
@@ -353,7 +358,6 @@ void run_return(void (*test_fn)(), int expected_return) {
     }
 
     close(filedes[0]);
-
 }
 
 void run(void (*test_fn)()) {
