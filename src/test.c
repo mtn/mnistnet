@@ -271,6 +271,34 @@ void test_matrix_add_incompatible_dimensions() {
     matrix_add(m1, m2);
 }
 
+double minus_one(double a) {
+    return a - 1;
+}
+
+void test_matrix_map() {
+    Matrix* m = malloc(sizeof(Matrix));
+    matrix_init(m, 2, 2);
+
+    m->elem[0] = 0;
+    m->elem[1] = 1;
+    m->elem[2] = 2;
+    m->elem[3] = 3;
+
+    matrix_map_(m, &minus_one);
+
+    assert(m->elem[0] == -1);
+    assert(m->elem[1] == 0);
+    assert(m->elem[2] == 1);
+    assert(m->elem[3] == 2);
+
+    matrix_sigmoid_(m);
+
+    assert(m->elem[0] - 0.269 < 0.01); // sigmoid(-1)
+    assert(m->elem[1] - 0.5 < 0.01);   // sigmoid(0)
+    assert(m->elem[2] - 0.731 < 0.01); // sigmoid(1)
+    assert(m->elem[3] - 0.881 < 0.01); // sigmoid(2)
+}
+
 void test_feed_forward() {
     int* sizes = malloc(sizeof(int) * 3);
 
@@ -333,12 +361,9 @@ void run_return(void (*test_fn)(), int expected_return) {
     printf("Test %s %s!\n", info.dli_sname,
             exit_status == expected_return ? "succeded" : "failed");
 
-    // Dump output from stdout of failed processes
-    if (exit_status != expected_return) {
-        printf("Expected return code %d, got %d\n", expected_return, exit_status);
-    }
-
     if (exit_status != expected_return || TESTVERBOSE) {
+        printf("Expected return code %d, got %d\n", expected_return, exit_status);
+
         char output_buffer[4096];
         while (true) {
             ssize_t count = read(filedes[0], output_buffer, sizeof(output_buffer));
@@ -379,5 +404,6 @@ int main () {
     run(&test_matrix_add_broadcasting_y_axis);
     run(&test_matrix_add_broadcasting_both_axes);
     run_return(&test_matrix_add_incompatible_dimensions, 1);
+    run(&test_matrix_map);
     run(&test_feed_forward);
 }

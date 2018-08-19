@@ -12,7 +12,18 @@
 int main() {
     puts("Hello world!");
 
-/*     int* sizes = malloc(3 * sizeof(int)); */
-/*     sizes[0] = sizes[1] = sizes[2] = 1; */
-/*     Network* net = create_network(3, sizes); */
+    FILE* image_file = open_image_file("data/train-images-idx3-ubyte");
+    
+    for (int i = 0; i < 5; i++) {
+        MnistImage img = read_image(image_file);
+
+        for (int j = 0; j < 28; j++) {
+            for (int k = 0; k < 28; k++) {
+                printf("%d", img.pixels[28 * j + k] > 0 ? 1 : 0);
+            }
+            printf("\n");
+        }
+
+        printf("\n\n");
+    }
 }

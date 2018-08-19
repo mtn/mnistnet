@@ -8,7 +8,6 @@
 #include "util.h"
 
 
-#include <stdio.h>
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
@@ -43,7 +42,6 @@ void init_weights(Network* net) {
 
 }
 
-#include <stdio.h>
 Network* create_network(int num_layers, int sizes[]) {
     Network* net = malloc(sizeof(Network));
 
