@@ -170,3 +170,9 @@ MnistData* load_data(char* label_filename, char* image_filename) {
 
     return data;
 }
+
+void free_mnist_data(MnistData* data) {
+    free(data->images);
+    free(data->labels);
+    free(data);
+}

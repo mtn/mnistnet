@@ -16,4 +16,6 @@ int main() {
                                          "data/train-images-idx3-ubyte");
 
     PRINT_DATAHEAD((training_data));
+
+    free_mnist_data(training_data);
 }

@@ -3,6 +3,7 @@
 
 #include "network.h"
 #include "macros.h"
+#include "mnist.h"
 #include "nmath.h"
 #include "util.h"
 
@@ -73,7 +74,6 @@ void free_network(Network* net) {
     free(net);
 }
 
-#include <stdio.h>
 // Feedforward
 Matrix* feed_forward(Network* net, Matrix* inp) {
     for (int i = 0; i < net->num_layers - 1; i++) {
@@ -99,7 +99,43 @@ Matrix* feed_forward(Network* net, Matrix* inp) {
     return inp;
 }
 
-// Mini-batch stochastic gradient descent
-void stochastic_gradient_descent(int mini_batch_size, int num_epoch) {
+int* get_minibatch_inds(int len) {
+    int* nums = malloc(sizeof(int));
 
+    for (int i = 0; i < len; i++) {
+        nums[i] = i;
+    }
+
+    shuffle_ints_(nums, len);
+
+    return nums;
+}
+
+void update_minibatch(Network* net, MnistData* training_data, int eta,
+        int* minibatch_inds, int start, int end) {
+
+
+}
+
+// Mini-batch stochastic gradient descent
+// test_data can be NULL (in which case the network isn't evaluated after each epoch)
+void stochastic_gradient_descent(Network* net, MnistData* training_data,
+        int num_epochs, int mini_batch_size, int eta, MnistData* test_data) {
+
+    for (int j = 0; j < num_epochs; j++) {
+        int* minibatch_inds = get_minibatch_inds(training_data->count);
+        int num_batches = training_data->count / mini_batch_size;
+
+        for (int i = 0; i < num_batches; i++) {
+            int start = mini_batch_size * i;
+            update_minibatch(net, training_data, eta, minibatch_inds, start,
+                    start + mini_batch_size - 1);
+        }
+
+        if (test_data != NULL) {
+            printf("Epoch %d: %d / %d", j, 0, test_data->count); // TODO add evaluation
+        } else {
+            printf("Epoch %d complete", j);
+        }
+    }
 }

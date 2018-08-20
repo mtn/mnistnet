@@ -27,4 +27,8 @@ int matrix_get_ind(Matrix* m, int row, int col);
 void matrix_free(Matrix* m);
 
 
+// Shuffle an array of integers in place (used in generating minibatches)
+void shuffle_ints_(int* array, int len);
+
+
 #endif /* __UTIL_H__ */

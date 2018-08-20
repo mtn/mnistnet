@@ -23,6 +23,6 @@ typedef struct {
 
 // Load data in memory from file names
 MnistData* load_data(char* label_filename, char* image_filename);
-
+void free_mnist_data(MnistData* data);
 
 #endif /* __MNIST_H__ */

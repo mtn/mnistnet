@@ -48,10 +48,12 @@
     }
 
 #else
+
 #define DEBUG_PRINT(x)
 #define PRINT_MATRIX(m)
 #define PRINT_DATAHEAD(d)
-#endif
+
+#endif /* DEBUG */
 
 
 #endif /* __MACROS_H__ */
