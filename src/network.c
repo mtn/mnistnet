@@ -111,10 +111,32 @@ int* get_minibatch_inds(int len) {
     return nums;
 }
 
+Matrix* init_nabla_b(Network* net) {
+    Matrix* nabla_b = malloc(net->num_layers * sizeof(Matrix));
+
+    /* matrix_init_zeros(nabla_b); */
+
+    return nabla_b;
+}
+
+Matrix* init_nabla_w(Network* net) {
+    Matrix* nabla_w = malloc(net->num_layers * sizeof(Matrix));
+
+
+    return nabla_w;
+}
+
 void update_minibatch(Network* net, MnistData* training_data, int eta,
         int* minibatch_inds, int start, int end) {
 
+    Matrix* nabla_b = init_nabla_b(net);
+    Matrix* nabla_w = init_nabla_w(net);
 
+
+    for (int i = 0; i < net->num_layers; i++) {
+        matrix_free(&nabla_b[i]);
+        matrix_free(&nabla_w[i]);
+    }
 }
 
 // Mini-batch stochastic gradient descent

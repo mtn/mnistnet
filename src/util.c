@@ -5,15 +5,24 @@
 #include "macros.h"
 
 
-void matrix_init(Matrix* m, int num_rows, int num_cols) {
+Matrix* matrix_init(Matrix* m, int num_rows, int num_cols) {
+    if (m == NULL) {
+        m = malloc(sizeof(Matrix));
+    }
+
     m->num_rows = num_rows;
     m->num_cols= num_cols;
     m->elem = malloc(num_rows * num_cols * sizeof(double));
+
+    return m;
 }
 
-// Creates a matrix and initializes its values to zero
-Matrix* matrix_zeros(int num_rows, int num_cols) {
-    Matrix* m = malloc(sizeof(Matrix));
+// Creates (or updated) a matrix and initializes its values to zero
+Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols) {
+    if (m == NULL) {
+        m = malloc(sizeof(Matrix));
+    }
+
     m->num_rows = num_rows;
     m->num_cols = num_cols;
     m->elem = calloc(num_rows * num_cols, sizeof(double));
@@ -22,8 +31,7 @@ Matrix* matrix_zeros(int num_rows, int num_cols) {
 }
 
 Matrix* matrix_map(Matrix* m, double (*map_fn)()) {
-    Matrix* new = malloc(sizeof(Matrix));
-    matrix_init(new, m->num_rows, m->num_cols);
+    Matrix* new = matrix_init(NULL, m->num_rows, m->num_cols);
 
     for (int i = 0; i < m->num_rows * m->num_cols; i++) {
         new->elem[i] = (*map_fn)();
@@ -48,6 +56,8 @@ int matrix_get_ind(Matrix* m, int row, int col) {
     return row * m->num_cols + col;
 }
 
+// This doesn't free the pointer m, since it might not have been
+// individually allocated
 void matrix_free(Matrix* m) {
     free(m->elem);
 }

@@ -52,7 +52,7 @@ void matrix_sigmoid_(Matrix* m) {
 }
 
 Matrix* matrix_scalar_multiply(Matrix* m, Matrix* b, double scalar) {
-    matrix_init(m, b->num_rows, b->num_cols);
+    m = matrix_init(m, b->num_rows, b->num_cols);
 
     for (int i = 0; i < m->num_rows * m->num_cols; i++) {
         m->elem[i] = b->elem[i] * scalar;
@@ -73,8 +73,7 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
         exit(1);
     }
 
-    Matrix* m = malloc(sizeof(Matrix));
-    matrix_init(m, a->num_rows, b->num_cols);
+    Matrix* m = matrix_init(NULL, a->num_rows, b->num_cols);
 
     for (int i = 0; i < a->num_rows; i++) {
         for (int j = 0; j < b->num_cols; j++) {
@@ -91,13 +90,11 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
 }
 
 Matrix* matrix_dot(Matrix* a, Matrix* b) {
-    Matrix* m = malloc(sizeof(Matrix));
-
     // If a or b is 1-D, equivalent to mapping scalar multiplication
     if (a->num_rows == 1 && a->num_cols == 1) {
-        return matrix_scalar_multiply(m, b, a->elem[0]);
+        return matrix_scalar_multiply(NULL, b, a->elem[0]);
     } else if (b->num_rows == 1 && b->num_cols == 1) {
-        return matrix_scalar_multiply(m, a, b->elem[0]);
+        return matrix_scalar_multiply(NULL, a, b->elem[0]);
     }
 
     return matrix_multiply(a, b);
@@ -139,8 +136,7 @@ Matrix* matrix_add(Matrix* a, Matrix* b) {
     int num_rows = MAX(a->num_rows, b->num_rows);
     int num_cols = MAX(a->num_cols, b->num_cols);
 
-    Matrix* m = malloc(sizeof(Matrix));
-    matrix_init(m, num_rows, num_cols);
+    Matrix* m = matrix_init(NULL, num_rows, num_cols);
 
     for (int i = 0; i < num_rows; i++) {
         for (int j = 0; j < num_cols; j++) {

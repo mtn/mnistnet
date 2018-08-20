@@ -11,7 +11,9 @@
 #include "nmath.h"
 #include "util.h"
 
+#ifndef TESTVERBSOE
 #define TESTVERBOSE false
+#endif
 
 
 void test_mnist_loader() {
@@ -48,14 +50,12 @@ void test_network_init() {
 }
 
 void test_matrix_inner_product() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 1, 3);
+    Matrix* m1 = matrix_init(NULL, 1, 3);
     m1->elem[0] = 1;
     m1->elem[1] = 1;
     m1->elem[2] = 1;
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 3, 1);
+    Matrix* m2 = matrix_init(NULL, 3, 1);
     m2->elem[0] = 1;
     m2->elem[1] = 1;
     m2->elem[2] = 1;
@@ -68,14 +68,12 @@ void test_matrix_inner_product() {
 }
 
 void test_matrix_inner_product_fail() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 1, 3);
+    Matrix* m1 = matrix_init(NULL, 1, 3);
     m1->elem[0] = 1;
     m1->elem[1] = 1;
     m1->elem[2] = 1;
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 1, 3);
+    Matrix* m2 = matrix_init(NULL, 1, 3);
     m2->elem[0] = 1;
     m2->elem[1] = 1;
     m2->elem[2] = 1;
@@ -85,8 +83,7 @@ void test_matrix_inner_product_fail() {
 }
 
 void test_matrix_multiply() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 2, 3);
+    Matrix* m1 = matrix_init(NULL, 2, 3);
     m1->elem[0] = 1;
     m1->elem[1] = 2;
     m1->elem[2] = 3;
@@ -98,8 +95,7 @@ void test_matrix_multiply() {
     assert(m1->num_rows == 2);
     assert(m1->num_cols == 3);
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 3, 2);
+    Matrix* m2 = matrix_init(NULL, 3, 2);
     m2->elem[0] = 7;
     m2->elem[1] = 8;
     m2->elem[2] = 9;
@@ -122,8 +118,7 @@ void test_matrix_multiply() {
 }
 
 void test_matrix_times_scalar_right() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 2, 3);
+    Matrix* m1 = matrix_init(NULL, 2, 3);
     m1->elem[0] = 1;
     m1->elem[1] = 2;
     m1->elem[2] = 3;
@@ -135,8 +130,7 @@ void test_matrix_times_scalar_right() {
     assert(m1->num_rows == 2);
     assert(m1->num_cols == 3);
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 1, 1);
+    Matrix* m2 = matrix_init(NULL, 1, 1);
     m2->elem[0] = 2;
 
     Matrix* m3 = matrix_dot(m1, m2);
@@ -152,8 +146,7 @@ void test_matrix_times_scalar_right() {
 }
 
 void test_matrix_times_scalar_left() {
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 2, 3);
+    Matrix* m2 = matrix_init(NULL, 2, 3);
     m2->elem[0] = 1;
     m2->elem[1] = 2;
     m2->elem[2] = 3;
@@ -165,8 +158,7 @@ void test_matrix_times_scalar_left() {
     assert(m2->num_rows == 2);
     assert(m2->num_cols == 3);
 
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 1, 1);
+    Matrix* m1 = matrix_init(NULL, 1, 1);
     m1->elem[0] = 2;
 
     Matrix* m3 = matrix_dot(m1, m2);
@@ -182,8 +174,7 @@ void test_matrix_times_scalar_left() {
 }
 
 void test_matrix_add_same_dimensions() {
-    Matrix* m = malloc(sizeof(Matrix));
-    matrix_init(m, 2, 2);
+    Matrix* m = matrix_init(NULL, 2, 2);
     m->elem[0] = 1;
     m->elem[1] = 2;
     m->elem[2] = 3;
@@ -201,15 +192,13 @@ void test_matrix_add_same_dimensions() {
 }
 
 void test_matrix_add_broadcasting_y_axis() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 2, 2);
+    Matrix* m1 = matrix_init(NULL, 2, 2);
     m1->elem[0] = 1;
     m1->elem[1] = 3;
     m1->elem[2] = 5;
     m1->elem[3] = 7;
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 2, 1);
+    Matrix* m2 = matrix_init(NULL, 2, 1);
     m2->elem[0] = 1;
     m2->elem[1] = 2;
 
@@ -224,15 +213,13 @@ void test_matrix_add_broadcasting_y_axis() {
 }
 
 void test_matrix_add_broadcasting_x_axis() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 2, 2);
+    Matrix* m1 = matrix_init(NULL, 2, 2);
     m1->elem[0] = 1;
     m1->elem[1] = 3;
     m1->elem[2] = 5;
     m1->elem[3] = 7;
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 1, 2);
+    Matrix* m2 = matrix_init(NULL, 1, 2);
     m2->elem[0] = 1;
     m2->elem[1] = 2;
 
@@ -247,15 +234,13 @@ void test_matrix_add_broadcasting_x_axis() {
 }
 
 void test_matrix_add_broadcasting_both_axes() {
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 2, 2);
+    Matrix* m1 = matrix_init(NULL, 2, 2);
     m1->elem[0] = 1;
     m1->elem[1] = 2;
     m1->elem[2] = 3;
     m1->elem[3] = 4;
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m2, 1, 1);
+    Matrix* m2 = matrix_init(NULL, 1, 1);
     m2->elem[0] = 1;
 
     Matrix* m3 = matrix_add(m1, m2);
@@ -270,11 +255,9 @@ void test_matrix_add_broadcasting_both_axes() {
 
 void test_matrix_add_incompatible_dimensions() {
     // Doesn't bother intializing values, since our failure doesn't depend on them
-    Matrix* m1 = malloc(sizeof(Matrix));
-    matrix_init(m1, 2, 2);
+    Matrix* m1 = matrix_init(NULL, 2, 2);
 
-    Matrix* m2 = malloc(sizeof(Matrix));
-    matrix_init(m1, 3, 3);
+    Matrix* m2 = matrix_init(NULL, 3, 3);
 
     matrix_add(m1, m2);
 }
@@ -284,8 +267,7 @@ double minus_one(double a) {
 }
 
 void test_matrix_map() {
-    Matrix* m = malloc(sizeof(Matrix));
-    matrix_init(m, 2, 2);
+    Matrix* m = matrix_init(NULL, 2, 2);
 
     m->elem[0] = 0;
     m->elem[1] = 1;
@@ -316,8 +298,7 @@ void test_feed_forward() {
 
     Network* net = create_network(3, sizes);
 
-    Matrix* inp = malloc(sizeof(Matrix));
-    matrix_init(inp, 1, 1);
+    Matrix* inp = matrix_init(NULL, 1, 1);
 
    inp->elem[0] = 1;
     /* inp->elem[2] = 1; */
