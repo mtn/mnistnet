@@ -8,6 +8,13 @@
 #include "util.h"
 
 
+// No need to keep track of the length, sine we know it from the net
+typedef struct {
+    Matrix* delta_b;
+    Matrix* delta_w;
+} DeltaNabla;
+
+
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
@@ -114,7 +121,12 @@ int* get_minibatch_inds(int len) {
 Matrix* init_nabla_b(Network* net) {
     Matrix* nabla_b = malloc(net->num_layers * sizeof(Matrix));
 
-    /* matrix_init_zeros(nabla_b); */
+    for (int i = 0; i < net->num_layers; i++) {
+        matrix_init_zeros(&nabla_b[i], (&net->biases[i])->num_rows,
+                (&net->biases[i])->num_cols);
+
+        PRINT_MATRIX((&nabla_b[i]));
+    }
 
     return nabla_b;
 }
@@ -122,16 +134,37 @@ Matrix* init_nabla_b(Network* net) {
 Matrix* init_nabla_w(Network* net) {
     Matrix* nabla_w = malloc(net->num_layers * sizeof(Matrix));
 
+    for (int i = 0; i < net->num_layers; i++) {
+        matrix_init_zeros(&nabla_w[i], (&net->weights[i])->num_rows,
+                (&net->weights[i])->num_cols);
+
+        PRINT_MATRIX((&nabla_w[i]));
+    }
 
     return nabla_w;
 }
 
+DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
+    Matrix* nabla_b = init_nabla_b(net);
+    Matrix* nabla_w = init_nabla_w(net);
+
+
+    return (DeltaNabla) { .delta_b = nabla_b, .delta_w = nabla_w };
+}
+
+// note: end is _exclusive_
 void update_minibatch(Network* net, MnistData* training_data, int eta,
         int* minibatch_inds, int start, int end) {
 
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
 
+    for (int i = start; i <= end; i++) {
+        int ind = minibatch_inds[i];
+        DeltaNabla delta = backprop(net, training_data->images[i],
+                training_data->labels[i]);
+
+    }
 
     for (int i = 0; i < net->num_layers; i++) {
         matrix_free(&nabla_b[i]);

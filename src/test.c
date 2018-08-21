@@ -312,6 +312,22 @@ void test_feed_forward() {
     free_network(net);
 }
 
+// Make sure nothing weird happens with the implicit casting
+void test_image_to_matrix() {
+    MnistImage img;
+    for (int i = 0; i < 784; i++) {
+        img.pixels[i] = (double)i;
+    }
+
+    Matrix* m = image_to_matrix(img);
+    for (int i = 0; i < 784; i++) {
+        assert(m->elem[i] - i < 0.01);
+    }
+
+    matrix_free(m);
+    free(m);
+}
+
 // Run, expecting a exit failure
 void run_return(void (*test_fn)(), int expected_return) {
     pid_t child_pid;
@@ -395,4 +411,5 @@ int main () {
     run_return(&test_matrix_add_incompatible_dimensions, 1);
     run(&test_matrix_map);
     run(&test_feed_forward);
+    run(&test_image_to_matrix);
 }

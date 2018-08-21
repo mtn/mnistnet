@@ -1,8 +1,10 @@
+#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
-#include "mnist.h"
 #include "macros.h"
+#include "mnist.h"
 
 
 typedef struct {
@@ -175,4 +177,14 @@ void free_mnist_data(MnistData* data) {
     free(data->images);
     free(data->labels);
     free(data);
+}
+
+Matrix* image_to_matrix(MnistImage image) {
+    Matrix* m = matrix_init(NULL, 784, 1);
+
+    for (int i = 0; i < 784; i++) {
+        m->elem[i] = (double)image.pixels[i];
+    }
+
+    return m;
 }

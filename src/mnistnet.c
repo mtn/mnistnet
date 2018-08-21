@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "mnist.h"
 #include "network.h"
 #include "macros.h"
+#include "mnist.h"
 #include "nmath.h"
 #include "util.h"
 

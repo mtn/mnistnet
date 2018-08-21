@@ -2,7 +2,8 @@
 #define __MNIST_H__
 
 #include <stdint.h>
-#include <stdio.h>
+
+#include "util.h"
 
 
 typedef struct {
@@ -24,5 +25,7 @@ typedef struct {
 // Load data in memory from file names
 MnistData* load_data(char* label_filename, char* image_filename);
 void free_mnist_data(MnistData* data);
+
+Matrix* image_to_matrix(MnistImage image);
 
 #endif /* __MNIST_H__ */
