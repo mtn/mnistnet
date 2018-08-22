@@ -29,8 +29,11 @@ Matrix* matrix_dot(Matrix* a, Matrix* b);
 Matrix* matrix_add(Matrix* a, Matrix* b);
 Matrix* matrix_subtract(Matrix* a, Matrix* b); // a - b
 
+Matrix* matrix_transpose(Matrix* m);
+
 // Apply the sigmoid function elemntwise, in place
 void matrix_sigmoid_(Matrix* m);
+void matrix_sigmoid_prime_(Matrix* m);
 
 
 #endif /* __NMATH_H__ */

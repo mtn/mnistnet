@@ -189,3 +189,11 @@ Matrix* image_to_matrix(MnistImage image) {
 
     return m;
 }
+
+Matrix* label_to_matrix(MnistLabel label) {
+    Matrix* m = matrix_init_zeros(NULL, 10, 1);
+
+    m->elem[label] = 1;
+
+    return m;
+}

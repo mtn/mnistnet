@@ -165,7 +165,7 @@ double negate(double x) {
 
 // TODO see if there can be fewer allocations
 // The problem is that broadcasting might make in-place addition/subtraction tricky
-// For now, I'm just doing an additional allocation
+// For now, I'm just doing an additional allocation + deallocation
 Matrix* matrix_subtract(Matrix* a, Matrix* b) {
     DEBUG_PRINT(("Subtracting matrices: \n"));
     PRINT_MATRIX(a);
@@ -187,4 +187,16 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
     PRINT_MATRIX((res));
 
     return res;
+}
+
+Matrix* matrix_transpose(Matrix* m) {
+    Matrix* trans = matrix_init(NULL, m->num_cols, m->num_rows);
+
+    for (int i = 0; i < m->num_rows; i++) {
+        for (int j = 0; j < m->num_cols; j++) {
+            trans->elem[matrix_get_ind(trans, j, i)] = m->elem[matrix_get_ind(m, i, j)];
+        }
+    }
+
+    return trans;
 }

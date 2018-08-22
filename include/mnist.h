@@ -27,5 +27,7 @@ MnistData* load_data(char* label_filename, char* image_filename);
 void free_mnist_data(MnistData* data);
 
 Matrix* image_to_matrix(MnistImage image);
+// Labels are 10-row matrices with value 1 at the label index
+Matrix* label_to_matrix(MnistLabel label);
 
 #endif /* __MNIST_H__ */

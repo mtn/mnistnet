@@ -68,6 +68,11 @@ void test_matrix_init_from() {
     for (int i = 0; i < 4; i++) {
         assert(new->elem[i] - (double)i <= 0.01);
     }
+
+    matrix_free(from);
+    matrix_free(new);
+    free(from);
+    free(new);
 }
 
 void test_matrix_inner_product() {
@@ -86,6 +91,13 @@ void test_matrix_inner_product() {
     assert(m3->num_cols == 1);
     assert(m3->num_rows == 1);
     assert(m3->elem[0] == 3);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_inner_product_fail() {
@@ -136,6 +148,13 @@ void test_matrix_multiply() {
     assert(m3->elem[1] == 64);
     assert(m3->elem[2] == 139);
     assert(m3->elem[3] == 154);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_times_scalar_right() {
@@ -164,6 +183,13 @@ void test_matrix_times_scalar_right() {
     assert(m3->elem[3] == 8);
     assert(m3->elem[4] == 10);
     assert(m3->elem[5] == 12);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_times_scalar_left() {
@@ -192,6 +218,13 @@ void test_matrix_times_scalar_left() {
     assert(m3->elem[3] == 8);
     assert(m3->elem[4] == 10);
     assert(m3->elem[5] == 12);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_add_same_dimensions() {
@@ -210,6 +243,11 @@ void test_matrix_add_same_dimensions() {
     assert(m1->elem[1] == 4);
     assert(m1->elem[2] == 6);
     assert(m1->elem[3] == 8);
+
+    matrix_free(m);
+    free(m);
+    matrix_free(m1);
+    free(m1);
 }
 
 void test_matrix_add_broadcasting_y_axis() {
@@ -231,6 +269,13 @@ void test_matrix_add_broadcasting_y_axis() {
     assert(m3->elem[1] == 4);
     assert(m3->elem[2] == 7);
     assert(m3->elem[3] == 9);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_add_broadcasting_x_axis() {
@@ -253,6 +298,13 @@ void test_matrix_add_broadcasting_x_axis() {
     assert(m3->elem[1] == 5);
     assert(m3->elem[2] == 6);
     assert(m3->elem[3] == 9);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_add_broadcasting_both_axes() {
@@ -273,6 +325,13 @@ void test_matrix_add_broadcasting_both_axes() {
     assert(m3->elem[1] == 3);
     assert(m3->elem[2] == 4);
     assert(m3->elem[3] == 5);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_add_incompatible_dimensions() {
@@ -302,6 +361,11 @@ void test_matrix_subtract_same_dimensions() {
     assert(m1->elem[1] == 0);
     assert(m1->elem[2] == 0);
     assert(m1->elem[3] == 0);
+
+    matrix_free(m);
+    free(m);
+    matrix_free(m1);
+    free(m1);
 }
 
 void test_matrix_subtract_broadcasting_y_axis() {
@@ -323,6 +387,13 @@ void test_matrix_subtract_broadcasting_y_axis() {
     assert(m3->elem[1] == 2);
     assert(m3->elem[2] == 3);
     assert(m3->elem[3] == 5);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_subtract_broadcasting_x_axis() {
@@ -344,6 +415,13 @@ void test_matrix_subtract_broadcasting_x_axis() {
     assert(m3->elem[1] == 1);
     assert(m3->elem[2] == 4);
     assert(m3->elem[3] == 5);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_subtract_broadcasting_both_axes() {
@@ -364,6 +442,13 @@ void test_matrix_subtract_broadcasting_both_axes() {
     assert(m3->elem[1] == 1);
     assert(m3->elem[2] == 2);
     assert(m3->elem[3] == 3);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    free(m1);
+    free(m2);
+    free(m3);
 }
 
 void test_matrix_subtract_incompatible_dimensions() {
@@ -372,6 +457,27 @@ void test_matrix_subtract_incompatible_dimensions() {
     Matrix* m2 = matrix_init(NULL, 3, 3);
 
     matrix_subtract(m1, m2);
+}
+
+void test_matrix_transpose() {
+    Matrix* m = matrix_init(NULL, 3, 2);
+    for (int i = 0; i < 6; i++) {
+        m->elem[i] = (double)i + 1;
+    }
+
+    Matrix* trans = matrix_transpose(m);
+    assert(trans->elem[0] == 1);
+    assert(trans->elem[1] == 3);
+    assert(trans->elem[2] == 5);
+    assert(trans->elem[3] == 2);
+    assert(trans->elem[4] == 4);
+    assert(trans->elem[5] == 6);
+
+    matrix_free(m);
+    matrix_free(trans);
+
+    free(m);
+    free(trans);
 }
 
 double minus_one(double a) {
@@ -399,6 +505,9 @@ void test_matrix_map() {
     assert(m->elem[1] - 0.5 < 0.01);   // sigmoid(0)
     assert(m->elem[2] - 0.731 < 0.01); // sigmoid(1)
     assert(m->elem[3] - 0.881 < 0.01); // sigmoid(2)
+
+    matrix_free(m);
+    free(m);
 }
 
 void test_feed_forward() {
@@ -412,7 +521,7 @@ void test_feed_forward() {
 
     Matrix* inp = matrix_init(NULL, 1, 1);
 
-   inp->elem[0] = 1;
+    inp->elem[0] = 1;
     /* inp->elem[2] = 1; */
     /* inp->elem[3] = 1; */
 
@@ -420,6 +529,7 @@ void test_feed_forward() {
 
     // No assertions, just check if this runs
 
+    free(sizes);
     free(out);
     free_network(net);
 }
@@ -435,6 +545,20 @@ void test_image_to_matrix() {
     for (int i = 0; i < 784; i++) {
         assert(m->elem[i] - i < 0.01);
     }
+
+    matrix_free(m);
+    free(m);
+}
+
+// These actually start at 0, so there's no shifting
+void test_label_to_matrix() {
+    MnistLabel label = 9;
+    Matrix* m = label_to_matrix(label);
+
+    for (int i = 0; i < 9; i++) {
+        assert(m->elem[i] == 0);
+    }
+    assert(m->elem[9] == 0);
 
     matrix_free(m);
     free(m);
@@ -539,7 +663,10 @@ int main () {
     run(&test_matrix_subtract_broadcasting_both_axes);
     run_return(&test_matrix_subtract_incompatible_dimensions, 1);
 
+    run(&test_matrix_transpose);
+
     run(&test_matrix_map);
     run(&test_feed_forward);
     run(&test_image_to_matrix);
+    run(&test_label_to_matrix);
 }
