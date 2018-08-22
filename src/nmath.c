@@ -167,11 +167,24 @@ double negate(double x) {
 // The problem is that broadcasting might make in-place addition/subtraction tricky
 // For now, I'm just doing an additional allocation
 Matrix* matrix_subtract(Matrix* a, Matrix* b) {
-    Matrix* neg = matrix_map(b, &negate);
+    DEBUG_PRINT(("Subtracting matrices: \n"));
+    PRINT_MATRIX(a);
+    DEBUG_PRINT(("-\n"));
+    PRINT_MATRIX(b);
+    DEBUG_PRINT(("\n"));
+
+    Matrix* neg= matrix_init_from(NULL, b);
+    matrix_map_(neg, &negate);
+
+    DEBUG_PRINT(("b negated: \n"));
+    PRINT_MATRIX(neg);
 
     Matrix* res = matrix_add(a, neg);
     matrix_free(neg);
     free(neg);
+
+    DEBUG_PRINT(("Result: \n"));
+    PRINT_MATRIX((res));
 
     return res;
 }

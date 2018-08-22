@@ -43,16 +43,6 @@ Matrix* matrix_init_from(Matrix* m, Matrix* from) {
     return m;
 }
 
-Matrix* matrix_map(Matrix* m, double (*map_fn)()) {
-    Matrix* new = matrix_init(NULL, m->num_rows, m->num_cols);
-
-    for (int i = 0; i < m->num_rows * m->num_cols; i++) {
-        new->elem[i] = (*map_fn)();
-    }
-
-    return new;
-}
-
 void matrix_map_(Matrix* m, double (*map_fn)(double elem)) {
     for (int i = 0; i < m->num_rows * m->num_cols; i++) {
         m->elem[i] = (*map_fn)(m->elem[i]);

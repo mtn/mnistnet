@@ -14,9 +14,7 @@ Matrix* matrix_init(Matrix* m, int num_rows, int num_cols);
 Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols);
 Matrix* matrix_init_from(Matrix* m, Matrix* from);
 
-// Initialize matrix values using an initialization function (eg. stdnormal)
-// *_ does the modification in place, the normal one involves a new allocation
-Matrix* matrix_map(Matrix* m, double (*map_fn)(double elem));
+// does the modification in place
 void matrix_map_(Matrix* m, double (*map_fn)(double elem));
 
 void matrix_init_buffer(Matrix* m, double (*init_fn)());

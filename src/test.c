@@ -297,6 +297,7 @@ void test_matrix_subtract_same_dimensions() {
     assert(m1->num_rows == 2);
     assert(m1->num_cols == 2);
 
+    DEBUG_PRINT(("elem 0 %f\n", m1->elem[0]));
     assert(m1->elem[0] == 0);
     assert(m1->elem[1] == 0);
     assert(m1->elem[2] == 0);
@@ -318,61 +319,61 @@ void test_matrix_subtract_broadcasting_y_axis() {
     assert(m3 != NULL);
     assert(m3->num_rows == 2);
     assert(m3->num_cols == 2);
-    assert(m3->elem[0] == 2);
-    assert(m3->elem[1] == 5);
-    assert(m3->elem[2] == 6);
-    assert(m3->elem[3] == 9);
+    assert(m3->elem[0] == 0);
+    assert(m3->elem[1] == 2);
+    assert(m3->elem[2] == 3);
+    assert(m3->elem[3] == 5);
 }
 
-/* void test_matrix_add_broadcasting_x_axis() { */
-/*     Matrix* m1 = matrix_init(NULL, 2, 2); */
-/*     m1->elem[0] = 1; */
-/*     m1->elem[1] = 3; */
-/*     m1->elem[2] = 5; */
-/*     m1->elem[3] = 7; */
+void test_matrix_subtract_broadcasting_x_axis() {
+    Matrix* m1 = matrix_init(NULL, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 3;
+    m1->elem[2] = 5;
+    m1->elem[3] = 7;
 
-/*     Matrix* m2 = matrix_init(NULL, 1, 2); */
-/*     m2->elem[0] = 1; */
-/*     m2->elem[1] = 2; */
+    Matrix* m2 = matrix_init(NULL, 1, 2);
+    m2->elem[0] = 1;
+    m2->elem[1] = 2;
 
-/*     Matrix* m3 = matrix_add(m1, m2); */
-/*     assert(m3 != NULL); */
-/*     assert(m3->num_rows == 2); */
-/*     assert(m3->num_cols == 2); */
-/*     assert(m3->elem[0] == 1); */
-/*     assert(m3->elem[1] == 4); */
-/*     assert(m3->elem[2] == 7); */
-/*     assert(m3->elem[3] == 9); */
-/* } */
+    Matrix* m3 = matrix_subtract(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 2);
+    assert(m3->elem[0] == 0);
+    assert(m3->elem[1] == 1);
+    assert(m3->elem[2] == 4);
+    assert(m3->elem[3] == 5);
+}
 
-/* void test_matrix_add_broadcasting_both_axes() { */
-/*     Matrix* m1 = matrix_init(NULL, 2, 2); */
-/*     m1->elem[0] = 1; */
-/*     m1->elem[1] = 2; */
-/*     m1->elem[2] = 3; */
-/*     m1->elem[3] = 4; */
+void test_matrix_subtract_broadcasting_both_axes() {
+    Matrix* m1 = matrix_init(NULL, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 2;
+    m1->elem[2] = 3;
+    m1->elem[3] = 4;
 
-/*     Matrix* m2 = matrix_init(NULL, 1, 1); */
-/*     m2->elem[0] = 1; */
+    Matrix* m2 = matrix_init(NULL, 1, 1);
+    m2->elem[0] = 1;
 
-/*     Matrix* m3 = matrix_add(m1, m2); */
-/*     assert(m3 != NULL); */
-/*     assert(m3->num_rows == 2); */
-/*     assert(m3->num_cols == 2); */
-/*     assert(m3->elem[0] == 2); */
-/*     assert(m3->elem[1] == 3); */
-/*     assert(m3->elem[2] == 4); */
-/*     assert(m3->elem[3] == 5); */
-/* } */
+    Matrix* m3 = matrix_subtract(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 2);
+    assert(m3->elem[0] == 0);
+    assert(m3->elem[1] == 1);
+    assert(m3->elem[2] == 2);
+    assert(m3->elem[3] == 3);
+}
 
-/* void test_matrix_add_incompatible_dimensions() { */
-/*     // Doesn't bother intializing values, since our failure doesn't depend on them */
-/*     Matrix* m1 = matrix_init(NULL, 2, 2); */
+void test_matrix_subtract_incompatible_dimensions() {
+    // Doesn't bother intializing values, since our failure doesn't depend on them
+    Matrix* m1 = matrix_init(NULL, 2, 2);
+    Matrix* m2 = matrix_init(NULL, 3, 3);
 
-/*     Matrix* m2 = matrix_init(NULL, 3, 3); */
+    matrix_subtract(m1, m2);
+}
 
-/*     matrix_add(m1, m2); */
-/* } */
 double minus_one(double a) {
     return a - 1;
 }
@@ -532,13 +533,13 @@ int main () {
     run(&test_matrix_add_broadcasting_both_axes);
     run_return(&test_matrix_add_incompatible_dimensions, 1);
 
-    /* run(&test_matrix_subtract_same_dimensions); */
-    /* run(&test_matrix_subtract_broadcasting_x_axis); */
-    /* run(&test_matrix_subtract_broadcasting_y_axis); */
-    /* run(&test_matrix_subtract_broadcasting_both_axes); */
-    /* run_return(&test_matrix_subtract_incompatible_dimensions, 1); */
+    run(&test_matrix_subtract_same_dimensions);
+    run(&test_matrix_subtract_broadcasting_x_axis);
+    run(&test_matrix_subtract_broadcasting_y_axis);
+    run(&test_matrix_subtract_broadcasting_both_axes);
+    run_return(&test_matrix_subtract_incompatible_dimensions, 1);
 
-    /* run(&test_matrix_map); */
-    /* run(&test_feed_forward); */
-    /* run(&test_image_to_matrix); */
+    run(&test_matrix_map);
+    run(&test_feed_forward);
+    run(&test_image_to_matrix);
 }
