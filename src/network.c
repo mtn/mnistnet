@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "network.h"
 #include "macros.h"
@@ -116,6 +117,7 @@ int* get_minibatch_inds(int len) {
     return nums;
 }
 
+// TODO check if we need to zero-initialize this
 Matrix* init_nabla_b(Network* net) {
     Matrix* nabla_b = malloc(net->num_layers * sizeof(Matrix));
 
@@ -129,6 +131,7 @@ Matrix* init_nabla_b(Network* net) {
     return nabla_b;
 }
 
+// TODO check if we need to zero-initialize this
 Matrix* init_nabla_w(Network* net) {
     Matrix* nabla_w = malloc(net->num_layers * sizeof(Matrix));
 
@@ -192,14 +195,26 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         Matrix* sp =  matrix_init_from(NULL, &zs[net->num_layers - i]);
         matrix_sigmoid_prime_(sp);
 
-        /* Matrix* trans = matrix_tranpose((&net->weights)[net->num_layers - i + 1]); */
-        /* matrix_dot_(delta, trans, delta); */
-        /* delta = matrix_dot() */
+        Matrix* trans = matrix_transpose((&net->weights)[net->num_layers - i + 1], false);
+        matrix_dot_(delta, trans, delta);
+        matrix_dot_(delta, delta, sp);
 
-        /* Matrix* z = ; */
-        /* Matrix* */ 
+        matrix_init_from(&nabla_b[net->num_layers - i], delta);
+
+        matrix_free(trans);
+        free(trans);
+        
+        trans = matrix_transpose(&activations[net->num_layers - i], false);
+
+        Matrix* dotted = matrix_dot(delta, trans);
+        matrix_init_from(&nabla_w[net->num_layers - i], dotted);
+
+        matrix_free(trans);
+        free(dotted);
+
+        matrix_free(trans);
+        free(trans);
     }
-
 
     matrix_free(zs_last);
     free(zs_last);
@@ -230,17 +245,45 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
 
+    Matrix* step = matrix_init(NULL, 1, 1);
+    step->elem[0] = eta / (end - start);
+
     for (int i = start; i <= end; i++) {
         int ind = minibatch_inds[i];
-        DeltaNabla delta = backprop(net, training_data->images[i],
-                training_data->labels[i]);
+        DeltaNabla delta = backprop(net, training_data->images[ind],
+                training_data->labels[ind]);
 
+        for (int i = 0; i < net->num_layers; i++) {
+            matrix_into(&nabla_b[i], matrix_add(&nabla_b[i], &(delta.delta_b)[i]));
+            matrix_into(&nabla_w[i], matrix_add(&nabla_w[i], &(delta.delta_w)[i]));
+        }
+
+        for (int i = 0; i < net->num_layers; i++) {
+            Matrix* sub = matrix_subtract(&net->weights[i], step);
+            matrix_dot_(sub, sub, &nabla_w[i]);
+            matrix_into(&net->weights[i], sub);
+
+            matrix_free(sub);
+            free(sub);
+
+            sub = matrix_subtract(&net->biases[i], step);
+            matrix_dot_(sub, sub, &nabla_b[i]);
+            matrix_into(&net->biases[i], sub);
+
+            matrix_free(sub);
+            free(sub);
+        }
     }
 
     for (int i = 0; i < net->num_layers; i++) {
         matrix_free(&nabla_b[i]);
         matrix_free(&nabla_w[i]);
     }
+}
+
+// TODO add evaluation
+int evaluate(Network* net, MnistData* test_data) {
+    return 0;
 }
 
 // Mini-batch stochastic gradient descent
@@ -259,7 +302,7 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
         }
 
         if (test_data != NULL) {
-            printf("Epoch %d: %d / %d", j, 0, test_data->count); // TODO add evaluation
+            printf("Epoch %d: %d / %d", j, evaluate(net, test_data), test_data->count);
         } else {
             printf("Epoch %d complete", j);
         }

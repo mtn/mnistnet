@@ -117,18 +117,18 @@ Matrix* matrix_dot(Matrix* a, Matrix* b) {
     return matrix_dot_(NULL, a, b);
 }
 
-int compute_broadcast_value(Matrix* m, int i, int j) {
-    if (m->num_rows == 1) {
-        if (m->num_cols == 1) {
-            return m->elem[0];
+int compute_broadcast_value(double* buf, int num_rows, int num_cols, int i, int j) {
+    if (num_rows == 1) {
+        if (num_cols == 1) {
+            return buf[0];
         } else {
-            return m->elem[j];
+            return buf[j];
         }
     } else {
-        if (m->num_cols == 1) {
-            return m->elem[i];
+        if (num_cols == 1) {
+            return buf[i];
         } else {
-            return m->elem[matrix_get_ind(m, i, j)];
+            return buf[num_cols * i + j];
         }
     }
 }
@@ -154,13 +154,21 @@ Matrix* matrix_add_(Matrix* a, Matrix* b, Matrix* dest) {
     // Since we know the matrix was broadcast-safe, we can just take the max
     int num_rows = MAX(a->num_rows, b->num_rows);
     int num_cols = MAX(a->num_cols, b->num_cols);
+    //
+    // Dest could be aliases with a or b, so we store pointers and values
+    double* a_buf = a->elem;
+    double* b_buf = b->elem;
+    int a_num_rows = a->num_rows;
+    int b_num_rows = b->num_rows;
+    int a_num_cols = a->num_cols;
+    int b_num_cols = b->num_cols;
 
     Matrix* m = matrix_init(dest, num_rows, num_cols);
 
     for (int i = 0; i < num_rows; i++) {
         for (int j = 0; j < num_cols; j++) {
-            m->elem[matrix_get_ind(m, i, j)] = compute_broadcast_value(a, i, j)
-                + compute_broadcast_value(b, i, j);
+            m->elem[matrix_get_ind(m, i, j)] = compute_broadcast_value(a_buf, a_num_rows, a_num_cols, i, j)
+                + compute_broadcast_value(b_buf, b_num_rows, b_num_cols, i, j);
         }
     }
 

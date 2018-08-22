@@ -11,8 +11,13 @@ typedef struct {
 
 // Initialize a matrix
 Matrix* matrix_init(Matrix* m, int num_rows, int num_cols);
+// Zero-initialize a matrix with a given size (like to np.zeros)
 Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols);
+// Initialize a matrix as a clone of another, copying the entire buffer
 Matrix* matrix_init_from(Matrix* m, Matrix* from);
+
+// Pass ownership of a buffer from one matrix to another (passing over dimensions as well)
+Matrix* matrix_into(Matrix* dest, Matrix* from);
 
 // does the modification in place
 void matrix_map_(Matrix* m, double (*map_fn)(double elem));
