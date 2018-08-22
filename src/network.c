@@ -144,10 +144,50 @@ Matrix* init_nabla_w(Network* net) {
     return nabla_w;
 }
 
+Matrix* cost_derivative(Matrix* output_activations, Matrix* y) {
+
+}
+
 DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
 
+    Matrix* activation = image_to_matrix(image);
+    Matrix* activations = malloc((net->num_layers + 1) * sizeof(Matrix));
+    matrix_init_from(&activations[0], activation);
+
+    Matrix* zs = malloc(net->num_layers * sizeof(Matrix));
+
+    // Feed forward
+    for (int i = 0; i < net->num_layers; i++) {
+        Matrix* wa = matrix_dot(&net->weights[i], activation);
+        DEBUG_PRINT(("w * a: \n"));
+        PRINT_MATRIX(wa);
+
+        matrix_free(activation);
+        free(activation);
+
+        Matrix* z = matrix_add(wa, &net->biases[i]);
+        matrix_init_from(&zs[i], z);
+
+        matrix_sigmoid_(z);
+        activation = z;
+        matrix_init_from(&activations[i+1], activation);
+    }
+
+    // Backward pass
+
+
+
+    for (int i = 0; i < net->num_layers + 1; i++) {
+        matrix_free(&activations[i]);
+    }
+    free(activations);
+
+    for (int i = 0; i < net->num_layers; i++) {
+        matrix_free(&zs[i]);
+    }
+    free(zs);
 
     return (DeltaNabla) { .delta_b = nabla_b, .delta_w = nabla_w };
 }

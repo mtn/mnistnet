@@ -49,6 +49,27 @@ void test_network_init() {
     free_network(net);
 }
 
+void test_matrix_init_from() {
+    DEBUG_PRINT(("From matrix:\n"));
+    Matrix* from = matrix_init(NULL, 2, 2);
+    for (int i = 0; i < 4; i++) {
+        from->elem[i] = (double)i;
+    }
+
+    PRINT_MATRIX(from);
+
+    Matrix* new = matrix_init_from(NULL, from);
+
+    DEBUG_PRINT(("New matrix:\n"));
+    PRINT_MATRIX(new);
+
+    assert(new->num_rows == 2);
+    assert(new->num_cols == 2);
+    for (int i = 0; i < 4; i++) {
+        assert(new->elem[i] - (double)i <= 0.01);
+    }
+}
+
 void test_matrix_inner_product() {
     Matrix* m1 = matrix_init(NULL, 1, 3);
     m1->elem[0] = 1;
@@ -62,8 +83,8 @@ void test_matrix_inner_product() {
 
     Matrix* m3 = matrix_multiply(m1, m2);
 
-    assert(m3->num_cols = 1);
-    assert(m3->num_rows = 1);
+    assert(m3->num_cols == 1);
+    assert(m3->num_rows == 1);
     assert(m3->elem[0] == 3);
 }
 
@@ -185,10 +206,10 @@ void test_matrix_add_same_dimensions() {
     assert(m1 != NULL);
     assert(m1->num_rows == 2);
     assert(m1->num_cols == 2);
-    assert(m1->elem[0] = 2);
-    assert(m1->elem[1] = 4);
-    assert(m1->elem[2] = 6);
-    assert(m1->elem[3] = 8);
+    assert(m1->elem[0] == 2);
+    assert(m1->elem[1] == 4);
+    assert(m1->elem[2] == 6);
+    assert(m1->elem[3] == 8);
 }
 
 void test_matrix_add_broadcasting_y_axis() {
@@ -206,10 +227,10 @@ void test_matrix_add_broadcasting_y_axis() {
     assert(m3 != NULL);
     assert(m3->num_rows == 2);
     assert(m3->num_cols == 2);
-    assert(m3->elem[0] = 2);
-    assert(m3->elem[1] = 5);
-    assert(m3->elem[2] = 6);
-    assert(m3->elem[3] = 9);
+    assert(m3->elem[0] == 2);
+    assert(m3->elem[1] == 4);
+    assert(m3->elem[2] == 7);
+    assert(m3->elem[3] == 9);
 }
 
 void test_matrix_add_broadcasting_x_axis() {
@@ -227,10 +248,11 @@ void test_matrix_add_broadcasting_x_axis() {
     assert(m3 != NULL);
     assert(m3->num_rows == 2);
     assert(m3->num_cols == 2);
-    assert(m3->elem[0] = 1);
-    assert(m3->elem[1] = 4);
-    assert(m3->elem[2] = 7);
-    assert(m3->elem[3] = 9);
+    printf("Hi there %f\n", m3->elem[0]);
+    assert(m3->elem[0] == 2);
+    assert(m3->elem[1] == 5);
+    assert(m3->elem[2] == 6);
+    assert(m3->elem[3] == 9);
 }
 
 void test_matrix_add_broadcasting_both_axes() {
@@ -247,10 +269,10 @@ void test_matrix_add_broadcasting_both_axes() {
     assert(m3 != NULL);
     assert(m3->num_rows == 2);
     assert(m3->num_cols == 2);
-    assert(m3->elem[0] = 2);
-    assert(m3->elem[1] = 3);
-    assert(m3->elem[2] = 4);
-    assert(m3->elem[3] = 5);
+    assert(m3->elem[0] == 2);
+    assert(m3->elem[1] == 3);
+    assert(m3->elem[2] == 4);
+    assert(m3->elem[3] == 5);
 }
 
 void test_matrix_add_incompatible_dimensions() {
@@ -262,6 +284,95 @@ void test_matrix_add_incompatible_dimensions() {
     matrix_add(m1, m2);
 }
 
+void test_matrix_subtract_same_dimensions() {
+    Matrix* m = matrix_init(NULL, 2, 2);
+    m->elem[0] = 1;
+    m->elem[1] = 2;
+    m->elem[2] = 3;
+    m->elem[3] = 4;
+
+    // There shouldn't be problems with memory due to passing the same matrix
+    Matrix* m1 = matrix_subtract(m, m);
+    assert(m1 != NULL);
+    assert(m1->num_rows == 2);
+    assert(m1->num_cols == 2);
+
+    assert(m1->elem[0] == 0);
+    assert(m1->elem[1] == 0);
+    assert(m1->elem[2] == 0);
+    assert(m1->elem[3] == 0);
+}
+
+void test_matrix_subtract_broadcasting_y_axis() {
+    Matrix* m1 = matrix_init(NULL, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 3;
+    m1->elem[2] = 5;
+    m1->elem[3] = 7;
+
+    Matrix* m2 = matrix_init(NULL, 2, 1);
+    m2->elem[0] = 1;
+    m2->elem[1] = 2;
+
+    Matrix* m3 = matrix_subtract(m1, m2);
+    assert(m3 != NULL);
+    assert(m3->num_rows == 2);
+    assert(m3->num_cols == 2);
+    assert(m3->elem[0] == 2);
+    assert(m3->elem[1] == 5);
+    assert(m3->elem[2] == 6);
+    assert(m3->elem[3] == 9);
+}
+
+/* void test_matrix_add_broadcasting_x_axis() { */
+/*     Matrix* m1 = matrix_init(NULL, 2, 2); */
+/*     m1->elem[0] = 1; */
+/*     m1->elem[1] = 3; */
+/*     m1->elem[2] = 5; */
+/*     m1->elem[3] = 7; */
+
+/*     Matrix* m2 = matrix_init(NULL, 1, 2); */
+/*     m2->elem[0] = 1; */
+/*     m2->elem[1] = 2; */
+
+/*     Matrix* m3 = matrix_add(m1, m2); */
+/*     assert(m3 != NULL); */
+/*     assert(m3->num_rows == 2); */
+/*     assert(m3->num_cols == 2); */
+/*     assert(m3->elem[0] == 1); */
+/*     assert(m3->elem[1] == 4); */
+/*     assert(m3->elem[2] == 7); */
+/*     assert(m3->elem[3] == 9); */
+/* } */
+
+/* void test_matrix_add_broadcasting_both_axes() { */
+/*     Matrix* m1 = matrix_init(NULL, 2, 2); */
+/*     m1->elem[0] = 1; */
+/*     m1->elem[1] = 2; */
+/*     m1->elem[2] = 3; */
+/*     m1->elem[3] = 4; */
+
+/*     Matrix* m2 = matrix_init(NULL, 1, 1); */
+/*     m2->elem[0] = 1; */
+
+/*     Matrix* m3 = matrix_add(m1, m2); */
+/*     assert(m3 != NULL); */
+/*     assert(m3->num_rows == 2); */
+/*     assert(m3->num_cols == 2); */
+/*     assert(m3->elem[0] == 2); */
+/*     assert(m3->elem[1] == 3); */
+/*     assert(m3->elem[2] == 4); */
+/*     assert(m3->elem[3] == 5); */
+/* } */
+
+/* void test_matrix_add_incompatible_dimensions() { */
+/*     // Doesn't bother intializing values, since our failure doesn't depend on them */
+/*     Matrix* m1 = matrix_init(NULL, 2, 2); */
+
+/*     Matrix* m2 = matrix_init(NULL, 3, 3); */
+
+/*     matrix_add(m1, m2); */
+/* } */
 double minus_one(double a) {
     return a - 1;
 }
@@ -360,8 +471,16 @@ void run_return(void (*test_fn)(), int expected_return) {
 
     int status = 0;
     // Wait for the child process to terminate
-    waitpid(child_pid, &status, 0);
-    int exit_status = WEXITSTATUS(status);
+    if (waitpid(child_pid, &status, 0) == -1) {
+        perror("waitpid() failed");
+        exit(EXIT_FAILURE);
+    }
+    int exit_status;
+    if (WIFEXITED(status)) {
+        exit_status = WEXITSTATUS(status);
+    } else {
+        exit_status = 1; // Declare failure if the process didn't exit normally
+    }
 
     printf("Test %s %s!\n", info.dli_sname,
             exit_status == expected_return ? "succeded" : "failed");
@@ -382,7 +501,7 @@ void run_return(void (*test_fn)(), int expected_return) {
             } else if (count == 0) {
                 break;
             } else {
-                printf("%s", output_buffer);
+                printf("%s\n", output_buffer);
             }
         }
     }
@@ -399,17 +518,27 @@ int main () {
 
     run(&test_mnist_loader);
     run(&test_network_init);
+    run(&test_matrix_init_from);
+
     run(&test_matrix_inner_product);
     run_return(&test_matrix_inner_product_fail, 1);
     run(&test_matrix_multiply);
     run(&test_matrix_times_scalar_right);
     run(&test_matrix_times_scalar_left);
+
     run(&test_matrix_add_same_dimensions);
     run(&test_matrix_add_broadcasting_x_axis);
     run(&test_matrix_add_broadcasting_y_axis);
     run(&test_matrix_add_broadcasting_both_axes);
     run_return(&test_matrix_add_incompatible_dimensions, 1);
-    run(&test_matrix_map);
-    run(&test_feed_forward);
-    run(&test_image_to_matrix);
+
+    /* run(&test_matrix_subtract_same_dimensions); */
+    /* run(&test_matrix_subtract_broadcasting_x_axis); */
+    /* run(&test_matrix_subtract_broadcasting_y_axis); */
+    /* run(&test_matrix_subtract_broadcasting_both_axes); */
+    /* run_return(&test_matrix_subtract_incompatible_dimensions, 1); */
+
+    /* run(&test_matrix_map); */
+    /* run(&test_feed_forward); */
+    /* run(&test_image_to_matrix); */
 }

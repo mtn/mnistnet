@@ -182,6 +182,7 @@ void free_mnist_data(MnistData* data) {
 Matrix* image_to_matrix(MnistImage image) {
     Matrix* m = matrix_init(NULL, 784, 1);
 
+    // We have to manually copy because the sizes differ
     for (int i = 0; i < 784; i++) {
         m->elem[i] = (double)image.pixels[i];
     }

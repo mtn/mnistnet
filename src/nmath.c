@@ -41,14 +41,17 @@ double sigmoid(double x) {
     return 1.0 / (1.0 + exp(-x));
 }
 
-// Wrapper around scalar multiplication, for mapping purposes
-double scalar_multiply(double a, double b) {
-    return a * b;
+double sigmoid_prime(double x) {
+    return sigmoid(x) * (1 - sigmoid(x));
 }
 
 // Elementwise sigmoid function that modifies a vector in place
 void matrix_sigmoid_(Matrix* m) {
     matrix_map_(m, &sigmoid);
+}
+
+void matrix_sigmoid_prime_(Matrix* m) {
+    matrix_map_(m, &sigmoid_prime);
 }
 
 Matrix* matrix_scalar_multiply(Matrix* m, Matrix* b, double scalar) {
@@ -102,23 +105,23 @@ Matrix* matrix_dot(Matrix* a, Matrix* b) {
     exit(1);
 }
 
-int compute_broadcast_index(Matrix* m, int i, int j) {
+int compute_broadcast_value(Matrix* m, int i, int j) {
     if (m->num_rows == 1) {
         if (m->num_cols == 1) {
             return m->elem[0];
         } else {
-            return m->elem[j - 1];
+            return m->elem[j];
         }
     } else {
         if (m->num_cols == 1) {
-            return m->elem[i - 1];
+            return m->elem[i];
         } else {
             return m->elem[matrix_get_ind(m, i, j)];
         }
     }
 }
 
-Matrix* matrix_add(Matrix* a, Matrix* b) {
+void check_addition_compatibility(Matrix* a, Matrix* b) {
     bool cols_compatible = a->num_cols == b->num_cols || a->num_cols == 1 || b->num_cols == 1;
     bool rows_compatible = a->num_rows == b->num_rows || a->num_rows == 1 || b->num_rows == 1;
     if (!cols_compatible || !rows_compatible) {
@@ -131,19 +134,44 @@ Matrix* matrix_add(Matrix* a, Matrix* b) {
 
         exit(1);
     }
+}
+
+Matrix* matrix_add_(Matrix* a, Matrix* b, Matrix* dest) {
+    check_addition_compatibility(a, b);
 
     // Since we know the matrix was broadcast-safe, we can just take the max
     int num_rows = MAX(a->num_rows, b->num_rows);
     int num_cols = MAX(a->num_cols, b->num_cols);
 
-    Matrix* m = matrix_init(NULL, num_rows, num_cols);
+    Matrix* m = matrix_init(dest, num_rows, num_cols);
 
     for (int i = 0; i < num_rows; i++) {
         for (int j = 0; j < num_cols; j++) {
-            m->elem[matrix_get_ind(m, i, j)] = compute_broadcast_index(a, i, j)
-                + compute_broadcast_index(b, i, j);
+            m->elem[matrix_get_ind(m, i, j)] = compute_broadcast_value(a, i, j)
+                + compute_broadcast_value(b, i, j);
         }
     }
 
     return m;
+}
+
+Matrix* matrix_add(Matrix* a, Matrix* b) {
+    return matrix_add_(a, b, NULL);
+}
+
+double negate(double x) {
+    return -x;
+}
+
+// TODO see if there can be fewer allocations
+// The problem is that broadcasting might make in-place addition/subtraction tricky
+// For now, I'm just doing an additional allocation
+Matrix* matrix_subtract(Matrix* a, Matrix* b) {
+    Matrix* neg = matrix_map(b, &negate);
+
+    Matrix* res = matrix_add(a, neg);
+    matrix_free(neg);
+    free(neg);
+
+    return res;
 }

@@ -30,6 +30,19 @@ Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols) {
     return m;
 }
 
+// Initialize a matrix as a clone of another
+Matrix* matrix_init_from(Matrix* m, Matrix* from) {
+    // If a matrix is passed in, it's buffer is assumed to be correctly size
+    if (m == NULL) {
+        m = malloc(sizeof(Matrix));
+        matrix_init(m, from->num_rows, from->num_cols);
+    }
+
+    memcpy(m->elem, from->elem, from->num_rows * from->num_cols * sizeof(double));
+
+    return m;
+}
+
 Matrix* matrix_map(Matrix* m, double (*map_fn)()) {
     Matrix* new = matrix_init(NULL, m->num_rows, m->num_cols);
 

@@ -12,6 +12,7 @@ typedef struct {
 // Initialize a matrix
 Matrix* matrix_init(Matrix* m, int num_rows, int num_cols);
 Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols);
+Matrix* matrix_init_from(Matrix* m, Matrix* from);
 
 // Initialize matrix values using an initialization function (eg. stdnormal)
 // *_ does the modification in place, the normal one involves a new allocation

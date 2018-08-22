@@ -29,4 +29,13 @@ int main() {
     Network* net = create_network(3, sizes);
 
     free_network(net);
+
+    Matrix* m1 = matrix_init(NULL, 2, 2);
+    m1->elem[0] = 1;
+    m1->elem[1] = 3;
+    m1->elem[2] = 5;
+    m1->elem[3] = 7;
+
+    printf("Matrix");
+    PRINT_MATRIX(m1);
 }

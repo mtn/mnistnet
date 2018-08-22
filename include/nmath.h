@@ -27,6 +27,7 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b);
 Matrix* matrix_dot(Matrix* a, Matrix* b);
 
 Matrix* matrix_add(Matrix* a, Matrix* b);
+Matrix* matrix_subtract(Matrix* a, Matrix* b); // a - b
 
 // Apply the sigmoid function elemntwise, in place
 void matrix_sigmoid_(Matrix* m);
