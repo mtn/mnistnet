@@ -63,8 +63,6 @@ Network* create_network(int num_layers, int sizes[]) {
 }
 
 void free_network(Network* net) {
-    free(net->sizes);
-
     // Free the memory associated with each bias matrix
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_free(&net->biases[i]);
@@ -186,7 +184,21 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* delta = matrix_dot(cost_der, zs_last);
 
     matrix_init_from(&nabla_b[net->num_layers - 1], delta);
-    /* matrix_init_from(&nabla_w[net->num_layers - 1], delta); */
+
+    matrix_dot_(&nabla_w[net->num_layers - 1], delta,
+            matrix_transpose(&activations[net->num_layers - 1], true));
+
+    for (int i = 2; i < net->num_layers; i++) {
+        Matrix* sp =  matrix_init_from(NULL, &zs[net->num_layers - i]);
+        matrix_sigmoid_prime_(sp);
+
+        /* Matrix* trans = matrix_tranpose((&net->weights)[net->num_layers - i + 1]); */
+        /* matrix_dot_(delta, trans, delta); */
+        /* delta = matrix_dot() */
+
+        /* Matrix* z = ; */
+        /* Matrix* */ 
+    }
 
 
     matrix_free(zs_last);

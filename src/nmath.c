@@ -64,7 +64,7 @@ Matrix* matrix_scalar_multiply(Matrix* m, Matrix* b, double scalar) {
     return m;
 }
 
-Matrix* matrix_multiply(Matrix* a, Matrix* b) {
+void check_multiplication_compatability(Matrix* a, Matrix* b) {
     // Should never be triggered, since matrix_multiply is only called internally
     if (a->num_cols != b->num_rows) {
         puts("Arguments to matrix multiply had incompatible shapes, exiting");
@@ -75,16 +75,25 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
 
         exit(1);
     }
+}
 
-    Matrix* m = matrix_init(NULL, a->num_rows, b->num_cols);
+Matrix* matrix_multiply(Matrix* dest, Matrix* a, Matrix* b) {
+    check_multiplication_compatability(a, b);
+    DEBUG_PRINT(("Matrix multiply\n"));
+
+    // Dest could be aliases with a or b, so we store pointers to their buffers
+    double* a_buf = a->elem;
+    double* b_buf = b->elem;
+
+    Matrix* m = matrix_init(dest, a->num_rows, b->num_cols);
 
     for (int i = 0; i < a->num_rows; i++) {
         for (int j = 0; j < b->num_cols; j++) {
             m->elem[matrix_get_ind(m, i, j)] = 0;
 
             for (int k = 0; k < a->num_cols; k++) {
-                m->elem[matrix_get_ind(m, i, j)] += a->elem[matrix_get_ind(a, i, k)]
-                    * b->elem[matrix_get_ind(b, k, j)];
+                m->elem[matrix_get_ind(m, i, j)] += a_buf[matrix_get_ind(a, i, k)]
+                    * b_buf[matrix_get_ind(b, k, j)];
             }
         }
     }
@@ -92,17 +101,20 @@ Matrix* matrix_multiply(Matrix* a, Matrix* b) {
     return m;
 }
 
-Matrix* matrix_dot(Matrix* a, Matrix* b) {
+// Pointer aliasing is okay, because we keep the buffers
+Matrix* matrix_dot_(Matrix* dest, Matrix* a, Matrix* b) {
     // If a or b is 1-D, equivalent to mapping scalar multiplication
     if (a->num_rows == 1 && a->num_cols == 1) {
-        return matrix_scalar_multiply(NULL, b, a->elem[0]);
+        return matrix_scalar_multiply(dest, b, a->elem[0]);
     } else if (b->num_rows == 1 && b->num_cols == 1) {
-        return matrix_scalar_multiply(NULL, a, b->elem[0]);
+        return matrix_scalar_multiply(dest, a, b->elem[0]);
     }
 
-    return matrix_multiply(a, b);
+    return matrix_multiply(dest, a, b);
+}
 
-    exit(1);
+Matrix* matrix_dot(Matrix* a, Matrix* b) {
+    return matrix_dot_(NULL, a, b);
 }
 
 int compute_broadcast_value(Matrix* m, int i, int j) {
@@ -189,13 +201,22 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
     return res;
 }
 
-Matrix* matrix_transpose(Matrix* m) {
+// TODO It would be nice to allow this to be done in place, since the memory layout of
+// a matrix and its transpose are the same. The implementation is more complicated,
+// so for now to avoid having to deallocate in the caller I'm just passing a flag
+// that has the callee take ownership of the original matrix (by deallocating it)
+Matrix* matrix_transpose(Matrix* m, bool take_ownership) {
     Matrix* trans = matrix_init(NULL, m->num_cols, m->num_rows);
 
     for (int i = 0; i < m->num_rows; i++) {
         for (int j = 0; j < m->num_cols; j++) {
             trans->elem[matrix_get_ind(trans, j, i)] = m->elem[matrix_get_ind(m, i, j)];
         }
+    }
+
+    if (take_ownership) {
+        matrix_free(m);
+        free(m);
     }
 
     return trans;

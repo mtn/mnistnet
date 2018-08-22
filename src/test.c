@@ -76,6 +76,8 @@ void test_matrix_init_from() {
 }
 
 void test_matrix_inner_product() {
+    DEBUG_PRINT(("Computing matrix inner product:\n"));
+
     Matrix* m1 = matrix_init(NULL, 1, 3);
     m1->elem[0] = 1;
     m1->elem[1] = 1;
@@ -86,7 +88,14 @@ void test_matrix_inner_product() {
     m2->elem[1] = 1;
     m2->elem[2] = 1;
 
-    Matrix* m3 = matrix_multiply(m1, m2);
+    PRINT_MATRIX(m1);
+    DEBUG_PRINT(("x\n"));
+    PRINT_MATRIX(m2);
+
+    Matrix* m3 = matrix_dot(m1, m2);
+
+    DEBUG_PRINT(("Result:\n"));
+    PRINT_MATRIX(m3);
 
     assert(m3->num_cols == 1);
     assert(m3->num_rows == 1);
@@ -112,10 +121,10 @@ void test_matrix_inner_product_fail() {
     m2->elem[2] = 1;
 
     // Expected failure with exit status 1
-    matrix_multiply(m1, m2);
+    matrix_dot(m1, m2);
 }
 
-void test_matrix_multiply() {
+void test_matrix_dot() {
     Matrix* m1 = matrix_init(NULL, 2, 3);
     m1->elem[0] = 1;
     m1->elem[1] = 2;
@@ -155,6 +164,52 @@ void test_matrix_multiply() {
     free(m1);
     free(m2);
     free(m3);
+}
+
+void test_matrix_dot_2() {
+    Matrix* a = matrix_init(NULL, 2, 2);
+    for (int i = 0; i < 4; i++) {
+        a->elem[i] = (double) i + 1;
+    }
+
+    Matrix* b = matrix_init(NULL, 2, 2);
+    for (int i = 0; i < 4; i++) {
+        b->elem[i] = (double) i + 1;
+    }
+
+    DEBUG_PRINT(("Computing matrix multiplication:\n"));
+    PRINT_MATRIX(a);
+    DEBUG_PRINT(("x\n"));
+    PRINT_MATRIX(b);
+
+    Matrix* c = matrix_dot(a, b);
+
+    DEBUG_PRINT(("Result: \n"));
+    PRINT_MATRIX(c);
+
+    assert(c->num_rows == 2);
+    assert(c->num_cols == 2);
+
+    assert(c->elem[0] == 7);
+    assert(c->elem[1] == 10);
+    assert(c->elem[2] == 15);
+    assert(c->elem[3] == 22);
+}
+
+void test_matrix_dot_under_aliasing() {
+    Matrix* a = matrix_init(NULL, 2, 2);
+    for (int i = 0; i < 4; i++) {
+        a->elem[i] = (double) i + 1;
+    }
+
+    a = matrix_dot_(a, a, a);
+
+    PRINT_MATRIX(a);
+
+    assert(a->elem[0] == 7);
+    assert(a->elem[1] == 10);
+    assert(a->elem[2] == 15);
+    assert(a->elem[3] == 22);
 }
 
 void test_matrix_times_scalar_right() {
@@ -465,7 +520,7 @@ void test_matrix_transpose() {
         m->elem[i] = (double)i + 1;
     }
 
-    Matrix* trans = matrix_transpose(m);
+    Matrix* trans = matrix_transpose(m, true);
     assert(trans->elem[0] == 1);
     assert(trans->elem[1] == 3);
     assert(trans->elem[2] == 5);
@@ -473,10 +528,7 @@ void test_matrix_transpose() {
     assert(trans->elem[4] == 4);
     assert(trans->elem[5] == 6);
 
-    matrix_free(m);
     matrix_free(trans);
-
-    free(m);
     free(trans);
 }
 
@@ -511,7 +563,8 @@ void test_matrix_map() {
 }
 
 void test_feed_forward() {
-    int* sizes = malloc(sizeof(int) * 3);
+    // This ends up being owned by the network
+    int sizes[3];
 
     sizes[0] = 1;
     sizes[1] = 2;
@@ -522,14 +575,11 @@ void test_feed_forward() {
     Matrix* inp = matrix_init(NULL, 1, 1);
 
     inp->elem[0] = 1;
-    /* inp->elem[2] = 1; */
-    /* inp->elem[3] = 1; */
 
     Matrix* out = feed_forward(net, inp);
 
     // No assertions, just check if this runs
 
-    free(sizes);
     free(out);
     free_network(net);
 }
@@ -558,7 +608,7 @@ void test_label_to_matrix() {
     for (int i = 0; i < 9; i++) {
         assert(m->elem[i] == 0);
     }
-    assert(m->elem[9] == 0);
+    assert(m->elem[9] == 1);
 
     matrix_free(m);
     free(m);
@@ -611,7 +661,7 @@ void run_return(void (*test_fn)(), int expected_return) {
             exit_status == expected_return ? "succeded" : "failed");
 
     if (exit_status != expected_return || TESTVERBOSE) {
-        printf("Expected return code %d, got %d\n", expected_return, exit_status);
+        printf("\tExpected return code %d, got %d\n", expected_return, exit_status);
 
         char output_buffer[4096];
         while (true) {
@@ -647,7 +697,9 @@ int main () {
 
     run(&test_matrix_inner_product);
     run_return(&test_matrix_inner_product_fail, 1);
-    run(&test_matrix_multiply);
+    run(&test_matrix_dot);
+    run(&test_matrix_dot_2);
+    run(&test_matrix_dot_under_aliasing);
     run(&test_matrix_times_scalar_right);
     run(&test_matrix_times_scalar_left);
 

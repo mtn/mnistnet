@@ -20,8 +20,7 @@ int main() {
     free_mnist_data(training_data);
 
 
-    int* sizes = malloc(sizeof(int) * 3);
-
+    int sizes[3];
     sizes[0] = 1;
     sizes[1] = 2;
     sizes[2] = 3;
