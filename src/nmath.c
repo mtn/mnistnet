@@ -117,6 +117,39 @@ Matrix* matrix_dot(Matrix* a, Matrix* b) {
     return matrix_dot_(NULL, a, b);
 }
 
+void check_hadamard_compatibility(Matrix* a, Matrix* b) {
+    if (a->num_rows != b->num_rows || a->num_cols != b->num_cols) {
+        puts("Arguments to matrix hadamard product had incompatible shapes, exiting");
+
+        DEBUG_PRINT(("\tShapes: (%d, %d) (%d, %d)\n", a->num_rows, a->num_cols,
+                                                      b->num_rows, b->num_cols));
+        DEBUG_PRINT(("\tRequired that %d == %d, %d == %d\n", a->num_cols, b->num_cols,
+                                                             a->num_rows, b->num_rows));
+
+        exit(1);
+
+    }
+}
+
+Matrix* matrix_hadamard_product(Matrix* dest, Matrix* a, Matrix* b) {
+    check_hadamard_compatibility(a, b);
+
+    double* a_buf = a->elem;
+    double* b_buf = b->elem;
+
+    Matrix* m = matrix_init(dest, a->num_rows, a->num_cols);
+
+
+    for (int i = 0; i < a->num_rows; i++) {
+        for (int j = 0; j < a->num_cols; j++) {
+            int ind = matrix_get_ind(m, i, j);
+            m->elem[ind] = a_buf[ind] * b_buf[ind];
+        }
+    }
+
+    return m;
+}
+
 int compute_broadcast_value(double* buf, int num_rows, int num_cols, int i, int j) {
     if (num_rows == 1) {
         if (num_cols == 1) {
@@ -154,7 +187,7 @@ Matrix* matrix_add_(Matrix* a, Matrix* b, Matrix* dest) {
     // Since we know the matrix was broadcast-safe, we can just take the max
     int num_rows = MAX(a->num_rows, b->num_rows);
     int num_cols = MAX(a->num_cols, b->num_cols);
-    //
+
     // Dest could be aliases with a or b, so we store pointers and values
     double* a_buf = a->elem;
     double* b_buf = b->elem;
@@ -213,6 +246,7 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
 // a matrix and its transpose are the same. The implementation is more complicated,
 // so for now to avoid having to deallocate in the caller I'm just passing a flag
 // that has the callee take ownership of the original matrix (by deallocating it)
+// TODO figure out the interface for this, since take_ownership isn't being used
 Matrix* matrix_transpose(Matrix* m, bool take_ownership) {
     Matrix* trans = matrix_init(NULL, m->num_cols, m->num_rows);
 
@@ -224,8 +258,8 @@ Matrix* matrix_transpose(Matrix* m, bool take_ownership) {
 
     if (take_ownership) {
         matrix_free(m);
-        free(m);
     }
 
+    puts("returning");
     return trans;
 }

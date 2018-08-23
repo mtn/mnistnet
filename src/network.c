@@ -165,15 +165,21 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         DEBUG_PRINT(("w * a: \n"));
         PRINT_MATRIX(wa);
 
+        puts("Freeing activation");
         matrix_free(activation);
         free(activation);
+        puts("Done freeing activation");
 
         Matrix* z = matrix_add(wa, &net->biases[i]);
         matrix_init_from(&zs[i], z);
 
         matrix_sigmoid_(z);
         activation = z;
-        matrix_init_from(&activations[i+1], activation);
+        printf("Setting activations %d\n", i + 1);
+        matrix_init_from(&activations[i + 1], activation);
+
+        printf("Set matrix\n");
+        PRINT_MATRIX((&activations[i + 1]));
     }
 
     // Backward pass
@@ -184,57 +190,76 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 2]);
     matrix_sigmoid_prime_(zs_last);
 
-    Matrix* delta = matrix_dot(cost_der, zs_last);
+    Matrix* delta = matrix_hadamard_product(NULL, cost_der, zs_last);
 
     matrix_init_from(&nabla_b[net->num_layers - 2], delta);
 
-    matrix_dot_(&nabla_w[net->num_layers - 2], delta,
-            matrix_transpose(&activations[net->num_layers - 2], true));
+    Matrix* trans = matrix_transpose(&activations[net->num_layers - 2], false);
+    matrix_dot_(&nabla_w[net->num_layers - 2], delta, trans);
 
-    puts("made it here");
-    for (int i = 2; i < net->num_layers - 1; i++) {
-        Matrix* sp =  matrix_init_from(NULL, &zs[net->num_layers - i]);
+    for (int i = 2; i < net->num_layers; i++) {
+        Matrix* sp =  matrix_init_from(NULL, &zs[net->num_layers - i - 1]);
         matrix_sigmoid_prime_(sp);
 
-        Matrix* trans = matrix_transpose((&net->weights)[net->num_layers - i + 1], false);
+        trans = matrix_transpose(&net->weights[net->num_layers - i], false);
         matrix_dot_(delta, trans, delta);
-        matrix_dot_(delta, delta, sp);
+        matrix_hadamard_product(delta, delta, sp);
 
         matrix_init_from(&nabla_b[net->num_layers - i], delta);
 
+        puts("Freeing trans");
         matrix_free(trans);
         free(trans);
-        
+        puts("Done freeing trans");
+
         trans = matrix_transpose(&activations[net->num_layers - i], false);
 
         Matrix* dotted = matrix_dot(delta, trans);
         matrix_init_from(&nabla_w[net->num_layers - i], dotted);
 
-        matrix_free(trans);
+        puts("Freeing doted");
+        matrix_free(dotted);
         free(dotted);
+        puts("Done Freeing doted");
 
+        puts("Freeing trans");
         matrix_free(trans);
         free(trans);
+        puts("Done Freeing trans");
     }
 
+    puts("Freeing zslast");
     matrix_free(zs_last);
     free(zs_last);
+    puts("Done Freeing zslast");
 
+    puts("Freeing costder");
     matrix_free(cost_der);
     free(cost_der);
+    puts("Done Freeing costder");
 
+    puts("Freeing labelvec");
     matrix_free(label_vector);
     free(label_vector);
+    puts("Done Freeing labelvec");
 
-    for (int i = 0; i < net->num_layers - 1; i++) {
+    for (int i = 0; i < net->num_layers; i++) {
+        printf("Freeing activations %d\n", i);
         matrix_free(&activations[i]);
+        puts("Done Freeing activations");
     }
+    puts("Freeing activations");
     free(activations);
+    puts("Done activations");
 
     for (int i = 0; i < net->num_layers - 1; i++) {
+        puts("Freeing zs");
         matrix_free(&zs[i]);
+        puts("Done Freeing zs");
     }
+    puts("Freeing zs");
     free(zs);
+    puts("Done Freeing zs");
 
     return (DeltaNabla) { .delta_b = nabla_b, .delta_w = nabla_w };
 }
@@ -243,20 +268,18 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
 void update_minibatch(Network* net, MnistData* training_data, int eta,
         int* minibatch_inds, int start, int end) {
 
-    puts("Initializing nabla_b");
     Matrix* nabla_b = init_nabla_b(net);
-    puts("Initializing nabla_w");
     Matrix* nabla_w = init_nabla_w(net);
-    puts("Done initializing both");
 
     Matrix* step = matrix_init(NULL, 1, 1);
     step->elem[0] = eta / (end - start);
 
     for (int i = start; i <= end; i++) {
         int ind = minibatch_inds[i];
-        puts("Made it here");
+        puts("starting backprop");
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
+        puts("made it out of backprop");
 
         for (int i = 0; i < net->num_layers - 1; i++) {
             matrix_into(&nabla_b[i], matrix_add(&nabla_b[i], &(delta.delta_b)[i]));

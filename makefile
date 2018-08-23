@@ -30,6 +30,7 @@ debug: clean exe_mode debug_mode $(obj) $(lib)
 
 debug_mode:
 	$(eval CFLAGS += -D DEBUG)
+	$(eval CFLAGS += -g)
 
 valgrind_mode:
 	$(eval CFLAGS += -g)

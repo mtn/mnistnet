@@ -79,7 +79,6 @@ int matrix_get_ind(Matrix* m, int row, int col) {
 void matrix_free(Matrix* m) {
     free(m->elem);
 }
-
 // Source: https://stackoverflow.com/a/6127606/2608433
 void shuffle_ints_(int* array, int len) {
     if (len > 1) {

@@ -28,6 +28,8 @@ Matrix* matrix_dot(Matrix* a, Matrix* b);
 // Same but allows user to specify destination matrix
 // Works and tested even under pointer aliasing
 Matrix* matrix_dot_(Matrix* dest, Matrix* a, Matrix* b);
+// Element-wise multiplication
+Matrix* matrix_hadamard_product(Matrix* dest, Matrix* a, Matrix* b);
 
 Matrix* matrix_add(Matrix* a, Matrix* b);
 Matrix* matrix_subtract(Matrix* a, Matrix* b); // a - b

@@ -282,6 +282,28 @@ void test_matrix_times_scalar_left() {
     free(m3);
 }
 
+void test_matrix_hadamard_product() {
+    Matrix* m = matrix_init(NULL, 4, 1);
+    for (int i = 0; i < 4; i++) {
+        m->elem[i] = (double) i + 1;
+    }
+
+    Matrix* m1 = matrix_hadamard_product(NULL, m, m);
+
+    assert(m1->num_rows == 4);
+    assert(m1->num_cols == 1);
+
+    assert(m1->elem[0] == 1);
+    assert(m1->elem[1] == 4);
+    assert(m1->elem[2] == 9);
+    assert(m1->elem[3] == 16);
+
+    matrix_free(m);
+    free(m);
+    matrix_free(m1);
+    free(m1);
+}
+
 void test_matrix_add_same_dimensions() {
     Matrix* m = matrix_init(NULL, 2, 2);
     m->elem[0] = 1;
@@ -702,6 +724,8 @@ int main () {
     run(&test_matrix_dot_under_aliasing);
     run(&test_matrix_times_scalar_right);
     run(&test_matrix_times_scalar_left);
+
+    run(&test_matrix_hadamard_product);
 
     run(&test_matrix_add_same_dimensions);
     run(&test_matrix_add_broadcasting_x_axis);
