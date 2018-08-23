@@ -16,10 +16,6 @@ typedef struct {
 } DeltaNabla;
 
 
-double one_init() {
-    return 1;
-}
-
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
@@ -30,8 +26,7 @@ void init_biases(Network* net) {
     for (int i = 0; i < net->num_layers - 1; i++) {
         // Initialize a column vector with {# nodes in next row} nodes
         matrix_init(&net->biases[i], net->sizes[i + 1], 1);
-        /* matrix_init_buffer(&net->biases[i], &stdnormal); */
-        matrix_init_buffer(&net->biases[i], &one_init); // TODO revert
+        matrix_init_buffer(&net->biases[i], &stdnormal);
 
         PRINT_MATRIX((&net->biases[i]));
     }
@@ -48,8 +43,7 @@ void init_weights(Network* net) {
         DEBUG_PRINT(("Layer %d-%d:\n", i, i + 1));
 
         matrix_init(&net->weights[i - 1], net->sizes[i], net->sizes[i - 1]);
-        /* matrix_init_buffer(&net->weights[i - 1], &stdnormal); */
-        matrix_init_buffer(&net->weights[i - 1], &one_init); // TODO revert
+        matrix_init_buffer(&net->weights[i - 1], &stdnormal);
 
         PRINT_MATRIX((&net->weights[i - 1]));
     }
@@ -315,9 +309,25 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
     }
 }
 
-// TODO add evaluation
+// TODO implement
 int evaluate(Network* net, MnistData* test_data) {
-    return 0;
+    int num_correct = 0;
+    for (int i = 0; i < test_data->count; i++) {
+        Matrix* inp = image_to_matrix(test_data->images[i]);
+        // takes ownership of inp
+        Matrix* out = feed_forward(net, inp);
+
+        int pred = matrix_argmax(inp);
+
+        if (pred == test_data->labels[i]) {
+            num_correct++;
+        }
+
+        matrix_free(out);
+        free(out);
+    }
+
+    return num_correct;
 }
 
 // Mini-batch stochastic gradient descent
@@ -328,22 +338,21 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
     puts("Starting SGD");
     for (int j = 0; j < num_epochs; j++) {
         printf("Epoch %d\n", j);
-        puts("Getting minibatch inds");
         int* minibatch_inds = get_minibatch_inds(training_data->count);
-        puts("Done getting minibatch inds");
         int num_batches = training_data->count / mini_batch_size;
-        puts("Computed number of batches");
 
         for (int i = 0; i < num_batches; i++) {
             int start = mini_batch_size * i;
-            /* puts("Updating minibatch"); */
+            if (i % 100 == 0) {
+                printf("Epoch %d Updating minibatch %d\n", j, i);
+            }
+            // TODO check that this isn't off by one
             update_minibatch(net, training_data, eta, minibatch_inds, start,
                     start + mini_batch_size - 1);
-            /* puts("Finished updating minibatch"); */
         }
 
         if (test_data != NULL) {
-            printf("Epoch %d: %d / %d", j, evaluate(net, test_data), test_data->count);
+            printf("Epoch %d: %d / %d\n", j, evaluate(net, test_data), test_data->count);
         } else {
             printf("Epoch %d complete\n", j);
         }

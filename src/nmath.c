@@ -34,6 +34,7 @@ double stdnormal() {
 
     phase = 1 - phase;
 
+    return rand();
     return Z;
 }
 
@@ -261,4 +262,15 @@ Matrix* matrix_transpose(Matrix* m, bool take_ownership) {
     }
 
     return trans;
+}
+
+int matrix_argmax(Matrix* m) {
+    int max_ind = 0;
+    for (int i = 1; i < m->num_rows * m->num_cols; i++) {
+        if (m->elem[i] > m->elem[max_ind]) {
+            max_ind = i;
+        }
+    }
+
+    return max_ind;
 }

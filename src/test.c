@@ -554,6 +554,16 @@ void test_matrix_transpose() {
     free(trans);
 }
 
+void test_matrix_argmax() {
+    Matrix* m = matrix_init(NULL, 2, 2);
+    m->elem[0] = 0;
+    m->elem[1] = 0;
+    m->elem[2] = -1;
+    m->elem[2] = 17;
+
+    assert(matrix_argmax(m) == 2);
+}
+
 double minus_one(double a) {
     return a - 1;
 }
@@ -740,6 +750,7 @@ int main () {
     run_return(&test_matrix_subtract_incompatible_dimensions, 1);
 
     run(&test_matrix_transpose);
+    run(&test_matrix_argmax);
 
     run(&test_matrix_map);
     run(&test_feed_forward);

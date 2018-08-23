@@ -41,6 +41,7 @@ valgrind_mode:
 exe_mode:
 	$(eval src = $(filter-out src/test.c, $(src)))
 	$(eval obj = $(filter-out src/test.o, $(src)))
+	$(eval CFLAGS += -O3)
 
 test_mode:
 	$(eval CFLAGS += -rdynamic)
