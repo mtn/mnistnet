@@ -10,6 +10,17 @@ lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
 
+run: mnistnet
+	./mnistnet
+
+mnistnet: clean exe_mode $(obj) $(lib)
+	$(CC) -o $@ $(obj) $(CFLAGS)
+
+valgrind: valgrind_mode mnistnet
+	echo "Start of output"
+	# valgrind --leak-check=full --show-leak-kinds=all ./mnistnet
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./mnistnet
+
 test: clean debug_mode test_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 	./test
@@ -17,11 +28,11 @@ test: clean debug_mode test_mode $(obj) $(lib)
 debug: clean exe_mode debug_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
-mnistnet: clean exe_mode $(obj) $(lib)
-	$(CC) -o $@ $(obj) $(CFLAGS)
-
 debug_mode:
 	$(eval CFLAGS += -D DEBUG)
+
+valgrind_mode:
+	$(eval CFLAGS += -g)
 
 exe_mode:
 	$(eval src = $(filter-out src/test.c, $(src)))

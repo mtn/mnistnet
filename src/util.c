@@ -31,13 +31,14 @@ Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols) {
 }
 
 // Initialize a matrix as a clone of another
+// the caller is responsible for handling its buffer, if there was one
 Matrix* matrix_init_from(Matrix* m, Matrix* from) {
     // If a matrix is passed in, it's buffer is assumed to be correctly size
     if (m == NULL) {
         m = malloc(sizeof(Matrix));
-        matrix_init(m, from->num_rows, from->num_cols);
     }
 
+    matrix_init(m, from->num_rows, from->num_cols);
     memcpy(m->elem, from->elem, from->num_rows * from->num_cols * sizeof(double));
 
     return m;

@@ -106,24 +106,25 @@ Matrix* feed_forward(Network* net, Matrix* inp) {
 }
 
 int* get_minibatch_inds(int len) {
-    int* nums = malloc(sizeof(int));
+    int* nums = malloc(len * sizeof(int));
 
     for (int i = 0; i < len; i++) {
         nums[i] = i;
     }
 
+    puts("Shuffling ints");
     shuffle_ints_(nums, len);
+    puts("Done shuffling ints");
 
     return nums;
 }
 
-// TODO check if we need to zero-initialize this
 Matrix* init_nabla_b(Network* net) {
     Matrix* nabla_b = malloc(net->num_layers * sizeof(Matrix));
 
-    for (int i = 0; i < net->num_layers; i++) {
-        matrix_init_zeros(&nabla_b[i], (&net->biases[i])->num_rows,
-                (&net->biases[i])->num_cols);
+    for (int i = 0; i < net->num_layers - 1; i++) {
+        matrix_init_zeros(&nabla_b[i], net->biases[i].num_rows,
+                net->biases[i].num_cols);
 
         PRINT_MATRIX((&nabla_b[i]));
     }
@@ -131,11 +132,10 @@ Matrix* init_nabla_b(Network* net) {
     return nabla_b;
 }
 
-// TODO check if we need to zero-initialize this
 Matrix* init_nabla_w(Network* net) {
     Matrix* nabla_w = malloc(net->num_layers * sizeof(Matrix));
 
-    for (int i = 0; i < net->num_layers; i++) {
+    for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_init_zeros(&nabla_w[i], (&net->weights[i])->num_rows,
                 (&net->weights[i])->num_cols);
 
@@ -154,13 +154,13 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* nabla_w = init_nabla_w(net);
 
     Matrix* activation = image_to_matrix(image);
-    Matrix* activations = malloc((net->num_layers + 1) * sizeof(Matrix));
+    Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
     matrix_init_from(&activations[0], activation);
 
-    Matrix* zs = malloc(net->num_layers * sizeof(Matrix));
+    Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
 
     // Feed forward
-    for (int i = 0; i < net->num_layers; i++) {
+    for (int i = 0; i < net->num_layers - 1; i++) {
         Matrix* wa = matrix_dot(&net->weights[i], activation);
         DEBUG_PRINT(("w * a: \n"));
         PRINT_MATRIX(wa);
@@ -179,19 +179,20 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     // Backward pass
     Matrix* label_vector = label_to_matrix(label);
 
-    Matrix* cost_der = cost_derivative(&activations[net->num_layers], label_vector);
+    Matrix* cost_der = cost_derivative(&activations[net->num_layers - 1], label_vector);
 
-    Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 1]);
+    Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 2]);
     matrix_sigmoid_prime_(zs_last);
 
     Matrix* delta = matrix_dot(cost_der, zs_last);
 
-    matrix_init_from(&nabla_b[net->num_layers - 1], delta);
+    matrix_init_from(&nabla_b[net->num_layers - 2], delta);
 
-    matrix_dot_(&nabla_w[net->num_layers - 1], delta,
-            matrix_transpose(&activations[net->num_layers - 1], true));
+    matrix_dot_(&nabla_w[net->num_layers - 2], delta,
+            matrix_transpose(&activations[net->num_layers - 2], true));
 
-    for (int i = 2; i < net->num_layers; i++) {
+    puts("made it here");
+    for (int i = 2; i < net->num_layers - 1; i++) {
         Matrix* sp =  matrix_init_from(NULL, &zs[net->num_layers - i]);
         matrix_sigmoid_prime_(sp);
 
@@ -225,12 +226,12 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     matrix_free(label_vector);
     free(label_vector);
 
-    for (int i = 0; i < net->num_layers + 1; i++) {
+    for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_free(&activations[i]);
     }
     free(activations);
 
-    for (int i = 0; i < net->num_layers; i++) {
+    for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_free(&zs[i]);
     }
     free(zs);
@@ -242,23 +243,27 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
 void update_minibatch(Network* net, MnistData* training_data, int eta,
         int* minibatch_inds, int start, int end) {
 
+    puts("Initializing nabla_b");
     Matrix* nabla_b = init_nabla_b(net);
+    puts("Initializing nabla_w");
     Matrix* nabla_w = init_nabla_w(net);
+    puts("Done initializing both");
 
     Matrix* step = matrix_init(NULL, 1, 1);
     step->elem[0] = eta / (end - start);
 
     for (int i = start; i <= end; i++) {
         int ind = minibatch_inds[i];
+        puts("Made it here");
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
 
-        for (int i = 0; i < net->num_layers; i++) {
+        for (int i = 0; i < net->num_layers - 1; i++) {
             matrix_into(&nabla_b[i], matrix_add(&nabla_b[i], &(delta.delta_b)[i]));
             matrix_into(&nabla_w[i], matrix_add(&nabla_w[i], &(delta.delta_w)[i]));
         }
 
-        for (int i = 0; i < net->num_layers; i++) {
+        for (int i = 0; i < net->num_layers - 1; i++) {
             Matrix* sub = matrix_subtract(&net->weights[i], step);
             matrix_dot_(sub, sub, &nabla_w[i]);
             matrix_into(&net->weights[i], sub);
@@ -291,20 +296,26 @@ int evaluate(Network* net, MnistData* test_data) {
 void stochastic_gradient_descent(Network* net, MnistData* training_data,
         int num_epochs, int mini_batch_size, int eta, MnistData* test_data) {
 
+    puts("Starting SGD");
     for (int j = 0; j < num_epochs; j++) {
+        puts("Getting minibatch inds");
         int* minibatch_inds = get_minibatch_inds(training_data->count);
+        puts("Done getting minibatch inds");
         int num_batches = training_data->count / mini_batch_size;
+        puts("Computed number of batches");
 
         for (int i = 0; i < num_batches; i++) {
             int start = mini_batch_size * i;
+            puts("Updating minibatch");
             update_minibatch(net, training_data, eta, minibatch_inds, start,
                     start + mini_batch_size - 1);
+            puts("Finished updating minibatch");
         }
 
         if (test_data != NULL) {
             printf("Epoch %d: %d / %d", j, evaluate(net, test_data), test_data->count);
         } else {
-            printf("Epoch %d complete", j);
+            printf("Epoch %d complete\n", j);
         }
     }
 }
