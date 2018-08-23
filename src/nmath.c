@@ -260,6 +260,5 @@ Matrix* matrix_transpose(Matrix* m, bool take_ownership) {
         matrix_free(m);
     }
 
-    puts("returning");
     return trans;
 }
