@@ -275,18 +275,19 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     return (DeltaNabla) { .delta_b = nabla_b, .delta_w = nabla_w };
 }
 
-// note: end is _exclusive_
+// note: end is _inclusive_
 void update_minibatch(Network* net, MnistData* training_data, int eta,
         int* minibatch_inds, int start, int end) {
 
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
 
+    // TODO allocate this outside, rather than passing arg eta
     Matrix* step = matrix_init(NULL, 1, 1);
     step->elem[0] = eta / (end - start);
 
-    for (int i = start; i <= end; i++) {
-        int ind = minibatch_inds[i];
+    for (int j = start; j <= end; j++) {
+        int ind = minibatch_inds[j];
         /* printf("starting backprop %d\n", i); */
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
@@ -320,6 +321,11 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
         matrix_free(&nabla_b[i]);
         matrix_free(&nabla_w[i]);
     }
+    free(&nabla_b[0]);
+    free(&nabla_w[0]);
+
+    matrix_free(step);
+    free(step);
 }
 
 int evaluate(Network* net, MnistData* test_data) {
@@ -331,9 +337,9 @@ int evaluate(Network* net, MnistData* test_data) {
 
         assert(out->num_rows == 10 && out->num_cols == 1);
         double max = 0;
-        for (int i = 0; i < 10; i++) {
-            if (max < out->elem[i]) {
-                max = out->elem[i];
+        for (int j = 0; j < 10; j++) {
+            if (max < out->elem[j]) {
+                max = out->elem[j];
             }
         }
         assert(max > 0);
