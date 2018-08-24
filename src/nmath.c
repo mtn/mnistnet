@@ -34,7 +34,6 @@ double stdnormal() {
 
     phase = 1 - phase;
 
-    return rand();
     return Z;
 }
 
@@ -132,24 +131,6 @@ void check_hadamard_compatibility(Matrix* a, Matrix* b) {
     }
 }
 
-Matrix* matrix_hadamard_product(Matrix* dest, Matrix* a, Matrix* b) {
-    check_hadamard_compatibility(a, b);
-
-    double* a_buf = a->elem;
-    double* b_buf = b->elem;
-
-    Matrix* m = matrix_init(dest, a->num_rows, a->num_cols);
-
-
-    for (int i = 0; i < a->num_rows; i++) {
-        for (int j = 0; j < a->num_cols; j++) {
-            int ind = matrix_get_ind(m, i, j);
-            m->elem[ind] = a_buf[ind] * b_buf[ind];
-        }
-    }
-
-    return m;
-}
 
 int compute_broadcast_value(double* buf, int num_rows, int num_cols, int i, int j) {
     if (num_rows == 1) {
@@ -167,23 +148,47 @@ int compute_broadcast_value(double* buf, int num_rows, int num_cols, int i, int 
     }
 }
 
-void check_addition_compatibility(Matrix* a, Matrix* b) {
+void check_broadcasting_compatibility(Matrix* a, Matrix* b) {
     bool cols_compatible = a->num_cols == b->num_cols || a->num_cols == 1 || b->num_cols == 1;
     bool rows_compatible = a->num_rows == b->num_rows || a->num_rows == 1 || b->num_rows == 1;
     if (!cols_compatible || !rows_compatible) {
-        puts("Arguments to matrix add had incompatible shapes, exiting");
+        puts("Arguments could not be broadcast, exiting");
 
         DEBUG_PRINT(("\tShapes: (%d, %d) (%d, %d)\n", a->num_rows, a->num_cols,
                                                       b->num_rows, b->num_cols));
-        DEBUG_PRINT(("\tRequired that %d == %d, %d == %d\n", a->num_cols, b->num_cols,
-                                                             a->num_rows, b->num_rows));
 
         exit(1);
     }
 }
 
+Matrix* matrix_hadamard_product(Matrix* dest, Matrix* a, Matrix* b) {
+    check_broadcasting_compatibility(a, b);
+
+    // Since we know the matrix was broadcast-safe, we can just take the max
+    int num_rows = MAX(a->num_rows, b->num_rows);
+    int num_cols = MAX(a->num_cols, b->num_cols);
+
+    double* a_buf = a->elem;
+    double* b_buf = b->elem;
+    int a_num_rows = a->num_rows;
+    int b_num_rows = b->num_rows;
+    int a_num_cols = a->num_cols;
+    int b_num_cols = b->num_cols;
+
+    Matrix* m = matrix_init(dest, num_rows, num_cols);
+
+    for (int i = 0; i < num_rows; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            m->elem[matrix_get_ind(m, i, j)] = compute_broadcast_value(a_buf, a_num_rows, a_num_cols, i, j)
+                * compute_broadcast_value(b_buf, b_num_rows, b_num_cols, i, j);
+        }
+    }
+
+    return m;
+}
+
 Matrix* matrix_add_(Matrix* a, Matrix* b, Matrix* dest) {
-    check_addition_compatibility(a, b);
+    check_broadcasting_compatibility(a, b);
 
     // Since we know the matrix was broadcast-safe, we can just take the max
     int num_rows = MAX(a->num_rows, b->num_rows);

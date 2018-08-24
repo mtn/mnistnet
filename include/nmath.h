@@ -41,7 +41,7 @@ void matrix_sigmoid_(Matrix* m);
 void matrix_sigmoid_prime_(Matrix* m);
 
 // Return the index of the maximum value in a matrix
-double matrix_argmax(Matrix* m);
+int matrix_argmax(Matrix* m);
 
 
 #endif /* __NMATH_H__ */

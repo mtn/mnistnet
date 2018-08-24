@@ -109,6 +109,20 @@ void test_matrix_inner_product() {
     free(m3);
 }
 
+void test_matrix_init_zeros() {
+    Matrix* m = matrix_init_zeros(NULL, 2, 2);
+
+    assert(m->num_rows == 2);
+    assert(m->num_cols == 2);
+
+    for (int i = 0; i < 4; i++) {
+        assert(m->elem[i] == 0);
+    }
+
+    matrix_free(m);
+    free(m);
+}
+
 void test_matrix_inner_product_fail() {
     Matrix* m1 = matrix_init(NULL, 1, 3);
     m1->elem[0] = 1;
@@ -302,6 +316,33 @@ void test_matrix_hadamard_product() {
     free(m);
     matrix_free(m1);
     free(m1);
+}
+
+void test_matrix_hadamard_product_broadcasting() {
+    Matrix* m = matrix_init(NULL, 4, 1);
+    for (int i = 0; i < 4; i++) {
+        m->elem[i] = (double) i + 1;
+    }
+
+    Matrix* m1 = matrix_init(NULL, 1, 1);
+    m1->elem[0] = (double) 2;
+
+    Matrix* m2 = matrix_hadamard_product(NULL, m, m1);
+
+    assert(m2->num_rows == 4);
+    assert(m2->num_cols == 1);
+
+    assert(m2->elem[0] == 2);
+    assert(m2->elem[1] == 4);
+    assert(m2->elem[2] == 6);
+    assert(m2->elem[3] == 8);
+
+    matrix_free(m);
+    free(m);
+    matrix_free(m1);
+    free(m1);
+    matrix_free(m2);
+    free(m2);
 }
 
 void test_matrix_add_same_dimensions() {
@@ -559,9 +600,9 @@ void test_matrix_argmax() {
     m->elem[0] = 0;
     m->elem[1] = 0;
     m->elem[2] = -1;
-    m->elem[2] = 17;
+    m->elem[3] = 17;
 
-    assert(matrix_argmax(m) == 2);
+    assert(matrix_argmax(m) == 3);
 }
 
 double minus_one(double a) {
@@ -726,6 +767,7 @@ int main () {
     run(&test_mnist_loader);
     run(&test_network_init);
     run(&test_matrix_init_from);
+    run(&test_matrix_init_zeros);
 
     run(&test_matrix_inner_product);
     run_return(&test_matrix_inner_product_fail, 1);
@@ -736,6 +778,7 @@ int main () {
     run(&test_matrix_times_scalar_left);
 
     run(&test_matrix_hadamard_product);
+    run(&test_matrix_hadamard_product_broadcasting);
 
     run(&test_matrix_add_same_dimensions);
     run(&test_matrix_add_broadcasting_x_axis);
