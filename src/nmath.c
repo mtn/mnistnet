@@ -253,17 +253,13 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
 // so for now to avoid having to deallocate in the caller I'm just passing a flag
 // that has the callee take ownership of the original matrix (by deallocating it)
 // TODO figure out the interface for this, since take_ownership isn't being used
-Matrix* matrix_transpose(Matrix* m, bool take_ownership) {
+Matrix* matrix_transpose(Matrix* m) {
     Matrix* trans = matrix_init(NULL, m->num_cols, m->num_rows);
 
     for (int i = 0; i < m->num_rows; i++) {
         for (int j = 0; j < m->num_cols; j++) {
             trans->elem[matrix_get_ind(trans, j, i)] = m->elem[matrix_get_ind(m, i, j)];
         }
-    }
-
-    if (take_ownership) {
-        matrix_free(m);
     }
 
     return trans;

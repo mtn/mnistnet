@@ -583,7 +583,7 @@ void test_matrix_transpose() {
         m->elem[i] = (double)i + 1;
     }
 
-    Matrix* trans = matrix_transpose(m, true);
+    Matrix* trans = matrix_transpose(m);
     assert(trans->elem[0] == 1);
     assert(trans->elem[1] == 3);
     assert(trans->elem[2] == 5);
@@ -591,6 +591,8 @@ void test_matrix_transpose() {
     assert(trans->elem[4] == 4);
     assert(trans->elem[5] == 6);
 
+    matrix_free(m);
+    free(m);
     matrix_free(trans);
     free(trans);
 }

@@ -34,7 +34,7 @@ Matrix* matrix_hadamard_product(Matrix* dest, Matrix* a, Matrix* b);
 Matrix* matrix_add(Matrix* a, Matrix* b);
 Matrix* matrix_subtract(Matrix* a, Matrix* b); // a - b
 
-Matrix* matrix_transpose(Matrix* m, bool take_ownership);
+Matrix* matrix_transpose(Matrix* m);
 
 // Apply the sigmoid function elemntwise, in place
 void matrix_sigmoid_(Matrix* m);

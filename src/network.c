@@ -157,15 +157,8 @@ Matrix* cost_derivative(Matrix* output_activations, Matrix* y) {
 DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     // TODO these buffers are leaking
     Matrix* nabla_b = init_nabla_b(net);
-    /* for (int i = 0; i < net->num_layers - 1; i++) { */
-    /*     printf("%d x %d\n", (&nabla_b[i])->num_rows, (&nabla_b[i])->num_cols); */
-    /* } */
     Matrix* nabla_w = init_nabla_w(net);
-
-    assert((&nabla_w[0])->num_rows == 30);
-    assert((&nabla_w[0])->num_cols == 784);
-    assert((&nabla_w[1])->num_rows == 10);
-    assert((&nabla_w[1])->num_cols == 30);
+    Matrix* label_vector = label_to_matrix(label);
 
     Matrix* activation = image_to_matrix(image);
     Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
@@ -192,20 +185,26 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         PRINT_MATRIX((&activations[i + 1]));
     }
 
+    matrix_free(activation);
+    free(activation);
+
     // Backward pass
-    Matrix* label_vector = label_to_matrix(label);
-
     Matrix* cost_der = cost_derivative(&activations[net->num_layers - 1], label_vector);
-
     Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 2]);
     matrix_sigmoid_prime_(zs_last);
-
     Matrix* delta = matrix_hadamard_product(NULL, cost_der, zs_last);
 
     matrix_init_from(&nabla_b[net->num_layers - 2], delta);
 
-    Matrix* trans = matrix_transpose(&activations[net->num_layers - 2], false);
+    Matrix* trans = matrix_transpose(&activations[net->num_layers - 2]);
     matrix_dot_(&nabla_w[net->num_layers - 2], delta, trans);
+
+    matrix_free(zs_last);
+    matrix_free(cost_der);
+    matrix_free(label_vector);
+    free(zs_last);
+    free(cost_der);
+    free(label_vector);
 
     for (int i = 2; i < net->num_layers; i++) {
         Matrix* sp = matrix_init_from(NULL, &zs[net->num_layers - i - 1]);
@@ -214,7 +213,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         matrix_sigmoid_prime_(sp);
         assert(sp->num_rows == 30);
 
-        trans = matrix_transpose(&net->weights[net->num_layers - i], false);
+        trans = matrix_transpose(&net->weights[net->num_layers - i]);
         matrix_dot_(delta, trans, delta);
         matrix_hadamard_product(delta, delta, sp);
         assert(delta->num_rows == 30);
@@ -228,7 +227,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
 
         assert((&activations[net->num_layers - i - 1])->num_rows == 784);
         assert((&activations[net->num_layers - i - 1])->num_cols == 1);
-        trans = matrix_transpose(&activations[net->num_layers - i - 1], false);
+        trans = matrix_transpose(&activations[net->num_layers - i - 1]);
         assert(trans->num_rows == 1);
         assert(trans->num_cols == 784);
 
@@ -249,15 +248,6 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         matrix_free(trans);
         free(trans);
     }
-
-    matrix_free(zs_last);
-    free(zs_last);
-
-    matrix_free(cost_der);
-    free(cost_der);
-
-    matrix_free(label_vector);
-    free(label_vector);
 
     for (int i = 0; i < net->num_layers; i++) {
         matrix_free(&activations[i]);
