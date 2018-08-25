@@ -13,8 +13,8 @@
 
 // No need to keep track of the length, sine we know it from the net
 typedef struct {
-    Matrix* delta_b;
-    Matrix* delta_w;
+    Matrix* b;
+    Matrix* w;
 } DeltaNabla;
 
 
@@ -32,8 +32,8 @@ void init_biases(Network* net) {
     for (int i = 0; i < net->num_layers - 1; i++) {
         // Initialize a column vector with {# nodes in next row} nodes
         matrix_init(&net->biases[i], net->sizes[i + 1], 1);
-        /* matrix_init_buffer(&net->biases[i], &stdnormal); */
-        matrix_init_buffer(&net->biases[i], &zero);
+        matrix_init_buffer(&net->biases[i], &stdnormal);
+        /* matrix_init_buffer(&net->biases[i], &zero); */
 
         PRINT_MATRIX((&net->biases[i]));
     }
@@ -50,8 +50,8 @@ void init_weights(Network* net) {
         DEBUG_PRINT(("Layer %d-%d:\n", i, i + 1));
 
         matrix_init(&net->weights[i - 1], net->sizes[i], net->sizes[i - 1]);
-        /* matrix_init_buffer(&net->weights[i - 1], &stdnormal); */
-        matrix_init_buffer(&net->weights[i - 1], &zero);
+        matrix_init_buffer(&net->weights[i - 1], &stdnormal);
+        /* matrix_init_buffer(&net->weights[i - 1], &zero); */
 
         PRINT_MATRIX((&net->weights[i - 1]));
     }
@@ -129,7 +129,7 @@ int* get_minibatch_inds(int len) {
     }
 
     puts("Shuffling ints");
-    /* shuffle_ints_(nums, len); */
+    shuffle_ints_(nums, len);
     puts("Done shuffling ints");
 
     return nums;
@@ -173,7 +173,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
 
     Matrix* activation = image_to_matrix(image);
     Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
-    matrix_init_from(&activations[0], activation);
+    matrix_into(&activations[0], activation);
 
     Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
 
@@ -183,21 +183,15 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         DEBUG_PRINT(("w * a: \n"));
         PRINT_MATRIX(wa);
 
-        matrix_free(activation);
-        free(activation);
-
         Matrix* z = matrix_add(wa, &net->biases[i]);
         matrix_init_from(&zs[i], z);
 
         matrix_sigmoid_(z);
         activation = z;
-        matrix_init_from(&activations[i + 1], activation);
+        matrix_into(&activations[i + 1], activation);
 
         PRINT_MATRIX((&activations[i + 1]));
     }
-
-    matrix_free(activation);
-    free(activation);
 
     // Backward pass
     Matrix* cost_der = cost_derivative(&activations[net->num_layers - 1], label_vector);
@@ -251,7 +245,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     }
     free(zs);
 
-    return (DeltaNabla) { .delta_b = nabla_b, .delta_w = nabla_w };
+    return (DeltaNabla) { .b = nabla_b, .w = nabla_w };
 }
 
 // note: end is _inclusive_
@@ -263,16 +257,35 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
 
     // TODO allocate this outside, rather than passing arg eta
     Matrix* step = matrix_init(NULL, 1, 1);
-    step->elem[0] = eta / (end - start);
+    step->elem[0] = (double)eta / (end - start);
 
     for (int j = start; j <= end; j++) {
         int ind = minibatch_inds[j];
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
 
+    /*     puts("hi"); */
+    /*     double max = 0; */
+    /*     for (int i = 0; i < net->num_layers - 1; i++) { */
+    /*     /1* matrix_init_zeros(&nabla_b[i], net->biases[i].num_rows, *1/ */
+    /*     /1*         net->biases[i].num_cols); *1/ */
+    /*         for (int k = 0; i < delta.b[i].num_rows * delta.b[i].num_cols; k++) { */
+    /*             puts("hi"); */
+    /*             if (delta.b[i].elem[k] > max) { */
+    /*                 puts("there"); */
+    /*                 max = delta.b[i].elem[k]; */
+    /*             } else { */
+    /*                 puts("there"); */
+    /*             } */
+    /*         } */
+
+    /*         assert(max > 0); */
+    /*     } */
+
+        // TODO possible memory leak
         for (int i = 0; i < net->num_layers - 1; i++) {
-            matrix_into(&nabla_b[i], matrix_add(&nabla_b[i], &(delta.delta_b)[i]));
-            matrix_into(&nabla_w[i], matrix_add(&nabla_w[i], &(delta.delta_w)[i]));
+            matrix_into(&nabla_b[i], matrix_add(&nabla_b[i], &(delta.b)[i]));
+            matrix_into(&nabla_w[i], matrix_add(&nabla_w[i], &(delta.w)[i]));
         }
 
         for (int i = 0; i < net->num_layers - 1; i++) {
@@ -307,7 +320,7 @@ int evaluate(Network* net, MnistData* test_data) {
     int num_correct = 0;
     for (int i = 0; i < test_data->count; i++) {
         Matrix* inp = image_to_matrix(test_data->images[i]);
-        LOL_MNIST_IMG(test_data->images[i]);
+        /* LOL_MNIST_IMG(test_data->images[i]); */
         // takes ownership of inp
         Matrix* out = feed_forward(net, inp);
 
@@ -322,7 +335,7 @@ int evaluate(Network* net, MnistData* test_data) {
         /* printf("\n"); */
         int pred = matrix_argmax(out);
 
-        LOL_MATRIX(out);
+        P_MATRIX(out);
 
         printf("Predicted %d: %f %f actual %d\n", pred, out->elem[pred], max, test_data->labels[i]);
         if (pred == test_data->labels[i]) {

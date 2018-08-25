@@ -55,7 +55,7 @@
 
 #endif /* DEBUG */
 
-#define LOL_MATRIX(m) printf("[\n\t"); \
+#define P_MATRIX(m) printf("[\n\t"); \
     for (int __print_matrix_i = 0; __print_matrix_i < m->num_rows; __print_matrix_i++) { \
         for (int __print_matrix_j = 0; __print_matrix_j < m->num_cols; __print_matrix_j++) { \
             printf("%f, ", m->elem[__print_matrix_i * (m)->num_cols + __print_matrix_j]); \
@@ -69,13 +69,5 @@
         } \
     } \
     printf("]\n")
-
-#define LOL_MNIST_IMG(m) \
-    for (int __print_mnist_img_i = 0; __print_mnist_img_i < 28; __print_mnist_img_i++) {\
-        for (int __print_mnist_img_k = 0; __print_mnist_img_k < 28; __print_mnist_img_k++) { \
-            printf((m.pixels[__print_mnist_img_i * 28 + __print_mnist_img_k] > 0 ? "1" : "0")); \
-        } \
-        printf("\n"); \
-    }
 
 #endif /* __MACROS_H__ */

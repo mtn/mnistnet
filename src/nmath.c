@@ -232,7 +232,7 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
     PRINT_MATRIX(b);
     DEBUG_PRINT(("\n"));
 
-    Matrix* neg= matrix_init_from(NULL, b);
+    Matrix* neg = matrix_init_from(NULL, b);
     matrix_map_(neg, &negate);
 
     DEBUG_PRINT(("b negated: \n"));
@@ -250,9 +250,8 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
 
 // TODO It would be nice to allow this to be done in place, since the memory layout of
 // a matrix and its transpose are the same. The implementation is more complicated,
-// so for now to avoid having to deallocate in the caller I'm just passing a flag
-// that has the callee take ownership of the original matrix (by deallocating it)
-// TODO figure out the interface for this, since take_ownership isn't being used
+// so for now I'm just doing another allocation and forcing the caller to be responsible
+// for the m
 Matrix* matrix_transpose(Matrix* m) {
     Matrix* trans = matrix_init(NULL, m->num_cols, m->num_rows);
 

@@ -17,6 +17,7 @@ Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols);
 Matrix* matrix_init_from(Matrix* m, Matrix* from);
 
 // Pass ownership of a buffer from one matrix to another (passing over dimensions as well)
+// Takes ownership of the matrix from, invalidating the pointer
 Matrix* matrix_into(Matrix* dest, Matrix* from);
 
 // does the modification in place
