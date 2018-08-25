@@ -42,7 +42,7 @@ double sigmoid(double x) {
 }
 
 double sigmoid_prime(double x) {
-    return sigmoid(x) * (1 - sigmoid(x));
+   return sigmoid(x) * (1 - sigmoid(x));
 }
 
 // Elementwise sigmoid function that modifies a vector in place

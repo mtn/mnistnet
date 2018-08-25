@@ -16,12 +16,14 @@ rund: debug
 run: mnistnet
 	./mnistnet
 
+lldb: debug_info mnistnet
+	lldb mnistnet
+
 mnistnet: clean exe_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
-valgrind: valgrind_mode mnistnet
+valgrind: debug_info mnistnet
 	echo "Start of output"
-	# valgrind --leak-check=full --show-leak-kinds=all ./mnistnet
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./mnistnet
 
 test: clean debug_mode test_mode $(obj) $(lib)
@@ -35,13 +37,13 @@ debug_mode:
 	$(eval CFLAGS += -D DEBUG)
 	$(eval CFLAGS += -g)
 
-valgrind_mode:
+debug_info:
 	$(eval CFLAGS += -g)
+	$(eval CFLAGS = $(filter-out -O3, $(CFLAGS)))
 
 exe_mode:
 	$(eval src = $(filter-out src/test.c, $(src)))
 	$(eval obj = $(filter-out src/test.o, $(src)))
-	$(eval CFLAGS += -O3)
 
 test_mode:
 	$(eval CFLAGS += -rdynamic)

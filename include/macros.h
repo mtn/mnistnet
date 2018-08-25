@@ -70,4 +70,12 @@
     } \
     printf("]\n")
 
+#define LOL_MNIST_IMG(m) \
+    for (int __print_mnist_img_i = 0; __print_mnist_img_i < 28; __print_mnist_img_i++) {\
+        for (int __print_mnist_img_k = 0; __print_mnist_img_k < 28; __print_mnist_img_k++) { \
+            printf((m.pixels[__print_mnist_img_i * 28 + __print_mnist_img_k] > 0 ? "1" : "0")); \
+        } \
+        printf("\n"); \
+    }
+
 #endif /* __MACROS_H__ */

@@ -29,7 +29,7 @@ int main() {
     Network* net = create_network(3, sizes);
 
     // Just one epoch, large minibatches
-    stochastic_gradient_descent(net, training_data, 1, 10, 3.0, test_data);
+    stochastic_gradient_descent(net, training_data, 2, 10, 3.0, test_data);
     /* stochastic_gradient_descent(net, training_data, 30, 30, 3.0, test_data); */
 
     free_network(net);

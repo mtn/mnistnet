@@ -246,6 +246,7 @@ void test_matrix_times_scalar_right() {
     assert(m3 != NULL);
     assert(m3->num_rows == 2);
     assert(m3->num_cols == 3);
+
     assert(m3->elem[0] == 2);
     assert(m3->elem[1] == 4);
     assert(m3->elem[2] == 6);
@@ -637,7 +638,35 @@ void test_matrix_map() {
     free(m);
 }
 
-void test_feed_forward() {
+void test_matrix_sigmoid() {
+    Matrix* m1 = matrix_init(NULL, 2, 2);
+    for (int i = 0; i < 4; i++) {
+        m1->elem[i] = (double) i + 1;
+    }
+
+    Matrix* m2 = matrix_init_from(NULL, m1);
+
+    matrix_sigmoid_(m1);
+
+    assert(m1->elem[0] - 0.731 < 0.01);
+    assert(m1->elem[1] - 0.881 < 0.01);
+    assert(m1->elem[2] - 0.953 < 0.01);
+    assert(m1->elem[3] - 0.982 < 0.01);
+
+    matrix_sigmoid_prime_(m2);
+
+    assert(m2->elem[0] - 0.197 < 0.01);
+    assert(m2->elem[1] - 0.105 < 0.01);
+    assert(m2->elem[2] - 0.045 < 0.01);
+    assert(m2->elem[3] - 0.018 < 0.01);
+
+    matrix_free(m1);
+    matrix_free(m2);
+    free(m1);
+    free(m2);
+}
+
+void test_feed_forward_dimensions() {
     // This ends up being owned by the network
     int sizes[3];
 
@@ -654,6 +683,45 @@ void test_feed_forward() {
     Matrix* out = feed_forward(net, inp);
 
     // No assertions, just check if this runs
+
+    free(out);
+    free_network(net);
+}
+
+void test_feed_forward() {
+    // This ends up being owned by the network
+    int sizes[3];
+
+    sizes[0] = 1;
+    sizes[1] = 2;
+    sizes[2] = 3;
+
+    Network* net = create_network(3, sizes);
+
+    // Make all weights and biases one
+    for (int i = 0; i < net->num_layers; i++) {
+        for (int j = 0; j < net->weights[i].num_rows * net->weights[i].num_cols; j++) {
+            net->weights[i].elem[j] = 1;
+        }
+
+        for (int j = 0; j < net->biases[i].num_rows * net->biases[i].num_cols; j++) {
+            net->biases[i].elem[j] = 1;
+        }
+    }
+
+    Matrix* inp = matrix_init(NULL, 1, 1);
+
+    inp->elem[0] = 1;
+
+    Matrix* out = feed_forward(net, inp);
+
+    assert(out != NULL);
+    assert(out->num_rows == 3);
+    assert(out->num_cols == 1);
+
+    assert(out->elem[0] - 0.9506 < 0.01);
+    assert(out->elem[1] - 0.9506 < 0.01);
+    assert(out->elem[2] - 0.9506 < 0.01);
 
     free(out);
     free_network(net);
@@ -798,6 +866,8 @@ int main () {
     run(&test_matrix_argmax);
 
     run(&test_matrix_map);
+    run(&test_matrix_sigmoid);
+    run(&test_feed_forward_dimensions);
     run(&test_feed_forward);
     run(&test_image_to_matrix);
     run(&test_label_to_matrix);
