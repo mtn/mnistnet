@@ -184,7 +184,7 @@ Matrix* image_to_matrix(MnistImage image) {
 
     // We have to manually copy because the sizes differ
     for (int i = 0; i < 784; i++) {
-        m->elem[i] = (double)image.pixels[i];
+        m->elem[i] = (double)image.pixels[i] / 256.0;
     }
 
     return m;

@@ -67,15 +67,6 @@ Network* create_network(int num_layers, int sizes[]) {
     init_biases(net);
     init_weights(net);
 
-    /* for (int i = 0; i < net->num_layers - 1; i++) { */
-    /*     for (int j = 0; j < (&net->weights[i])->num_rows * (&net->weights[i])->num_cols; j++) { */
-    /*         assert((&net->weights[i])->elem[j] == 1); */
-    /*     } */
-    /*     for (int j = 0; j < (&net->biases[i])->num_rows * (&net->biases[i])->num_cols; j++) { */
-    /*         assert((&net->biases[i])->elem[j] == 1); */
-    /*     } */
-    /* } */
-
     return net;
 }
 
@@ -173,26 +164,8 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
 
     Matrix* activation = image_to_matrix(image);
 
-    double max = 0;
-    for (int i = 0; i < activation->num_rows * activation->num_cols; i++) {
-        if (activation->elem[i] > max) {
-            max = activation->elem[i];
-        }
-    }
-
-    assert(max > 0.00001);
-
     Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
     matrix_into(&activations[0], activation);
-
-    max = 0;
-    for (int i = 0; i < activations[0].num_rows * activation[0].num_cols; i++) {
-        if (activations[0].elem[i] > max) {
-            max = activations[0].elem[i];
-        }
-    }
-
-    assert(max > 0.00001);
 
     Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
 
@@ -213,33 +186,33 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         PRINT_MATRIX((&activations[i + 1]));
     }
 
-    for (int i = 0; i < net->num_layers; i++) {
-        double max;
-        for (int q = 0; q < (&activations[i])->num_rows * (&activations[i])->num_cols; q++) {
-            if ((&activations[i])->elem[q] > max) {
-                max = (&activations[i])->elem[q];
-            }
-        }
+    /* for (int i = 0; i < net->num_layers; i++) { */
+    /*     double max; */
+    /*     for (int q = 0; q < (&activations[i])->num_rows * (&activations[i])->num_cols; q++) { */
+    /*         if ((&activations[i])->elem[q] > max) { */
+    /*             max = (&activations[i])->elem[q]; */
+    /*         } */
+    /*     } */
 
-        assert(max > 0.000001);
-        /* printf("MAX %f\n", max); */
-    }
+    /*     assert(max > 0.000001); */
+    /*     /1* printf("MAX %f\n", max); *1/ */
+    /* } */
 
     // Backward pass
     Matrix* cost_der = cost_derivative(&activations[net->num_layers - 1], label_vector);
 
-    max = 0;
-    for (int q = 0; q < (cost_der)->num_rows * (cost_der)->num_cols; q++) {
-        if (cost_der->elem[q] > max) {
-            max = (cost_der)->elem[q];
-        }
-    }
+    /* max = 0; */
+    /* for (int q = 0; q < (cost_der)->num_rows * (cost_der)->num_cols; q++) { */
+    /*     if (cost_der->elem[q] > max) { */
+    /*         max = (cost_der)->elem[q]; */
+    /*     } */
+    /* } */
 
-    printf("MAX %f\n", max);
-    P_MATRIX((&activations[net->num_layers - 1]));
-    P_MATRIX(label_vector);
-    P_MATRIX(cost_der);
-    assert(max != 0);
+    /* printf("MAX %f\n", max); */
+    /* P_MATRIX((&activations[net->num_layers - 1])); */
+    /* P_MATRIX(label_vector); */
+    /* P_MATRIX(cost_der); */
+    /* assert(max != 0); */
 
     Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 2]);
     matrix_sigmoid_prime_(zs_last);
@@ -292,29 +265,27 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     }
     free(zs);
 
-    for (int i = 0; i < net->num_layers - 1; i++) {
-        double max = 0;
-        for (int q = 0; q < (&nabla_b[i])->num_rows * (&nabla_b[i])->num_cols; q++) {
-            if ((&nabla_b[i])->elem[q] > max) {
-                max = (&nabla_b[i])->elem[q];
-            }
-        }
+/*     for (int i = 0; i < net->num_layers - 1; i++) { */
+/*         double min = 0; */
+/*         for (int q = 0; q < (&nabla_b[i])->num_rows * (&nabla_b[i])->num_cols; q++) { */
+/*             if ((&nabla_b[i])->elem[q] < min) { */
+/*                 min = (&nabla_b[i])->elem[q]; */
+/*             } */
+/*         } */
 
-        assert(max > 0);
-    }
+/*         assert(min <  0); */
+/*     } */
 
-    for (int i = 0; i < net->num_layers - 1; i++) {
-        double max = 0;
-        for (int q = 0; q < (&nabla_w[i])->num_rows * (&nabla_w[i])->num_cols; q++) {
-            if ((&nabla_w[i])->elem[q] > max) {
-                max = (&nabla_w[i])->elem[q];
-            }
-        }
+/*     for (int i = 0; i < net->num_layers - 1; i++) { */
+/*         double min= 0; */
+/*         for (int q = 0; q < (&nabla_w[i])->num_rows * (&nabla_w[i])->num_cols; q++) { */
+/*             if ((&nabla_w[i])->elem[q] < min) { */
+/*                 min = (&nabla_w[i])->elem[q]; */
+/*             } */
+/*         } */
 
-        assert(max > 0);
-    }
-
-
+/*         assert(min<0); */
+/*     } */
 
     return (DeltaNabla) { .b = nabla_b, .w = nabla_w };
 }
@@ -322,6 +293,8 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
 // note: end is _inclusive_
 void update_minibatch(Network* net, MnistData* training_data, int eta,
         int* minibatch_inds, int start, int end) {
+
+    /* printf("Updating minibatch, inds %d to %d\n", start, end); */
 
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
@@ -334,6 +307,8 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
         int ind = minibatch_inds[j];
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
+
+        /* exit(1); */
 
         /* Matrix* nabla_b = delta.b; */
         /* Matrix* nabla_w = delta.w; */
@@ -402,7 +377,7 @@ int evaluate(Network* net, MnistData* test_data) {
         /* printf("\n"); */
         int pred = matrix_argmax(out);
 
-        P_MATRIX(out);
+        /* P_MATRIX(out); */
 
         printf("Predicted %d: %f %f actual %d\n", pred, out->elem[pred], max, test_data->labels[i]);
         if (pred == test_data->labels[i]) {
@@ -425,6 +400,11 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
     for (int j = 0; j < num_epochs; j++) {
         printf("Epoch %d\n", j + 1);
         int* minibatch_inds = get_minibatch_inds(training_data->count);
+
+        /* for (int i = 0; i < training_data->count; i++) { */
+        /*     assert(minibatch_inds[i] == i); */
+        /* } */
+
         int num_batches = training_data->count / mini_batch_size;
 
         for (int i = 0; i < num_batches; i++) {
@@ -435,6 +415,7 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
             int start = mini_batch_size * i;
             update_minibatch(net, training_data, eta, minibatch_inds, start,
                     start + mini_batch_size - 1);
+            /* exit(1); */
         }
 
         if (test_data != NULL) {

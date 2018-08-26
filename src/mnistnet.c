@@ -19,7 +19,7 @@ int main() {
                                      "data/t10k-images-idx3-ubyte");
 
     PRINT_DATAHEAD((training_data));
-    PRINT_DATAHEAD((training_data));
+    PRINT_DATAHEAD((test_data));
 
     int sizes[3];
     sizes[0] = 784;
