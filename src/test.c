@@ -369,6 +369,48 @@ void test_matrix_add_same_dimensions() {
     free(m1);
 }
 
+// Taken from what seemed to be a failing example
+void test_matrix_add_2() {
+    Matrix* m1 = matrix_init(NULL, 10, 1);
+    m1->elem[0] = 0.952574;
+    m1->elem[1] = 0.119203;
+    m1->elem[2] = 0.880797;
+    m1->elem[3] = 0.268941;
+    m1->elem[4] = 0.982014;
+    m1->elem[5] = 0.500000;
+    m1->elem[6] = 0.500000;
+    m1->elem[7] = 0.997527;
+    m1->elem[8] = 0.952574;
+    m1->elem[9] = 0.047426;
+
+    Matrix* m2 = matrix_init(NULL, 10, 1);
+    m2->elem[0] = 0;
+    m2->elem[1] = 0;
+    m2->elem[2] = 0;
+    m2->elem[3] = 0;
+    m2->elem[4] = 0;
+    m2->elem[5] = -1;
+    m2->elem[6] = 0;
+    m2->elem[7] = 0;
+    m2->elem[8] = 0;
+    m2->elem[9] = 0;
+
+    Matrix* m3 = matrix_add(m1, m2);
+    P_MATRIX(m3);
+
+    assert(m3->elem[0] == 0.952574);
+    assert(m3->elem[1] == 0.119203);
+    assert(m3->elem[2] == 0.880797);
+    assert(m3->elem[3] == 0.268941);
+    assert(m3->elem[4] == 0.982014);
+    assert(m3->elem[5] == -0.5);
+    assert(m3->elem[6] == 0.5);
+    assert(m3->elem[7] == 0.997527);
+    assert(m3->elem[8] == 0.952574);
+    assert(m3->elem[9] == 0.047426);
+}
+
+
 void test_matrix_add_broadcasting_y_axis() {
     Matrix* m1 = matrix_init(NULL, 2, 2);
     m1->elem[0] = 1;
@@ -851,6 +893,7 @@ int main () {
     run(&test_matrix_hadamard_product_broadcasting);
 
     run(&test_matrix_add_same_dimensions);
+    run(&test_matrix_add_2);
     run(&test_matrix_add_broadcasting_x_axis);
     run(&test_matrix_add_broadcasting_y_axis);
     run(&test_matrix_add_broadcasting_both_axes);

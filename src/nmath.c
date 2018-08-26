@@ -132,7 +132,7 @@ void check_hadamard_compatibility(Matrix* a, Matrix* b) {
 }
 
 
-int compute_broadcast_value(double* buf, int num_rows, int num_cols, int i, int j) {
+double compute_broadcast_value(double* buf, int num_rows, int num_cols, int i, int j) {
     if (num_rows == 1) {
         if (num_cols == 1) {
             return buf[0];

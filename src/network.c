@@ -172,14 +172,34 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* label_vector = label_to_matrix(label);
 
     Matrix* activation = image_to_matrix(image);
+
+    double max = 0;
+    for (int i = 0; i < activation->num_rows * activation->num_cols; i++) {
+        if (activation->elem[i] > max) {
+            max = activation->elem[i];
+        }
+    }
+
+    assert(max > 0.00001);
+
     Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
     matrix_into(&activations[0], activation);
+
+    max = 0;
+    for (int i = 0; i < activations[0].num_rows * activation[0].num_cols; i++) {
+        if (activations[0].elem[i] > max) {
+            max = activations[0].elem[i];
+        }
+    }
+
+    assert(max > 0.00001);
 
     Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
 
     // Feed forward
     for (int i = 0; i < net->num_layers - 1; i++) {
         Matrix* wa = matrix_dot(&net->weights[i], activation);
+
         DEBUG_PRINT(("w * a: \n"));
         PRINT_MATRIX(wa);
 
@@ -193,8 +213,34 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         PRINT_MATRIX((&activations[i + 1]));
     }
 
+    for (int i = 0; i < net->num_layers; i++) {
+        double max;
+        for (int q = 0; q < (&activations[i])->num_rows * (&activations[i])->num_cols; q++) {
+            if ((&activations[i])->elem[q] > max) {
+                max = (&activations[i])->elem[q];
+            }
+        }
+
+        assert(max > 0.000001);
+        /* printf("MAX %f\n", max); */
+    }
+
     // Backward pass
     Matrix* cost_der = cost_derivative(&activations[net->num_layers - 1], label_vector);
+
+    max = 0;
+    for (int q = 0; q < (cost_der)->num_rows * (cost_der)->num_cols; q++) {
+        if (cost_der->elem[q] > max) {
+            max = (cost_der)->elem[q];
+        }
+    }
+
+    printf("MAX %f\n", max);
+    P_MATRIX((&activations[net->num_layers - 1]));
+    P_MATRIX(label_vector);
+    P_MATRIX(cost_der);
+    assert(max != 0);
+
     Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 2]);
     matrix_sigmoid_prime_(zs_last);
     Matrix* delta = matrix_hadamard_product(NULL, cost_der, zs_last);
@@ -227,6 +273,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         // TODO into rather than deallocating matrix?
         trans = matrix_transpose(&activations[net->num_layers - i - 1]);
         Matrix* dotted = matrix_dot(delta, trans);
+
         matrix_init_from(&nabla_w[net->num_layers - 1 - i], dotted);
 
         matrix_free(trans);
@@ -244,6 +291,30 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         matrix_free(&zs[i]);
     }
     free(zs);
+
+    for (int i = 0; i < net->num_layers - 1; i++) {
+        double max = 0;
+        for (int q = 0; q < (&nabla_b[i])->num_rows * (&nabla_b[i])->num_cols; q++) {
+            if ((&nabla_b[i])->elem[q] > max) {
+                max = (&nabla_b[i])->elem[q];
+            }
+        }
+
+        assert(max > 0);
+    }
+
+    for (int i = 0; i < net->num_layers - 1; i++) {
+        double max = 0;
+        for (int q = 0; q < (&nabla_w[i])->num_rows * (&nabla_w[i])->num_cols; q++) {
+            if ((&nabla_w[i])->elem[q] > max) {
+                max = (&nabla_w[i])->elem[q];
+            }
+        }
+
+        assert(max > 0);
+    }
+
+
 
     return (DeltaNabla) { .b = nabla_b, .w = nabla_w };
 }
@@ -264,23 +335,19 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
 
-    /*     puts("hi"); */
-    /*     double max = 0; */
-    /*     for (int i = 0; i < net->num_layers - 1; i++) { */
-    /*     /1* matrix_init_zeros(&nabla_b[i], net->biases[i].num_rows, *1/ */
-    /*     /1*         net->biases[i].num_cols); *1/ */
-    /*         for (int k = 0; i < delta.b[i].num_rows * delta.b[i].num_cols; k++) { */
-    /*             puts("hi"); */
-    /*             if (delta.b[i].elem[k] > max) { */
-    /*                 puts("there"); */
-    /*                 max = delta.b[i].elem[k]; */
-    /*             } else { */
-    /*                 puts("there"); */
-    /*             } */
-    /*         } */
+        /* Matrix* nabla_b = delta.b; */
+        /* Matrix* nabla_w = delta.w; */
+        /* for (int i = 0; i < net->num_layers - 1; i++) { */
+        /*     double max; */
+        /*     for (int q = 0; q < (&nabla_w[i])->num_rows * (&nabla_w[i])->num_cols; q++) { */
+        /*         if ((&nabla_w[i])->elem[q] > max) { */
+        /*             max = (&nabla_w[i])->elem[q]; */
+        /*         } */
+        /*     } */
 
-    /*         assert(max > 0); */
-    /*     } */
+        /*     assert(max > 0.000001); */
+        /*     printf("MAX %f\n", max); */
+        /* } */
 
         // TODO possible memory leak
         for (int i = 0; i < net->num_layers - 1; i++) {
