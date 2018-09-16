@@ -10,11 +10,11 @@ lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
 
-rund: debug
-	./debug
-
 run: mnistnet
 	./mnistnet
+
+rund: debug
+	./debug
 
 lldb: debug_info mnistnet
 	lldb mnistnet

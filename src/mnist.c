@@ -156,18 +156,35 @@ void init_data(MnistData* data, int count) {
     data->labels = malloc(count * sizeof(MnistLabel));
 }
 
-MnistData* load_data(char* label_filename, char* image_filename) {
-    MnistData* data = malloc(sizeof(MnistData));
+MnistData* load_data(char* label_filename, char* image_filename, uint32_t end) {
+    MnistData* data;
 
     MnistLabelFile label_file = open_label_file(label_filename);
     MnistImageFile image_file = open_image_file(image_filename);
 
     assert(label_file.header.num_items == image_file.header.num_images);
-    init_data(data, label_file.header.num_items);
 
-    for (int i = 0; i < data->count; i++) {
-        data->labels[i] = read_label(&label_file);
-        data->images[i] = read_image(&image_file);
+    if (end == 0 || end == label_file.header.num_items) {
+        end = label_file.header.num_items;
+        data = malloc(sizeof(MnistData));
+        init_data(data, label_file.header.num_items);
+    } else {
+        assert(end < label_file.header.num_items);
+
+        // Read the remainder into a second continguous struct
+        data = malloc(2 * sizeof(MnistData));
+        init_data(&data[0], end);
+        init_data(&data[1], label_file.header.num_items - end);
+    }
+
+    for (uint32_t i = 0; i < end; i++) {
+        data[0].labels[i] = read_label(&label_file);
+        data[0].images[i] = read_image(&image_file);
+    }
+    puts("hi there");
+    for (uint32_t i = 0; i < label_file.header.num_items - end; i++) {
+        data[1].labels[i] = read_label(&label_file);
+        data[1].images[i] = read_image(&image_file);
     }
 
     return data;
@@ -176,7 +193,6 @@ MnistData* load_data(char* label_filename, char* image_filename) {
 void free_mnist_data(MnistData* data) {
     free(data->images);
     free(data->labels);
-    free(data);
 }
 
 Matrix* image_to_matrix(MnistImage image) {

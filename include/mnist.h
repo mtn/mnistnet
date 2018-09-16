@@ -23,7 +23,10 @@ typedef struct {
 
 
 // Load data in memory from file names
-MnistData* load_data(char* label_filename, char* image_filename);
+// `end` allows loading less than the full data file into a struct.
+// The remaining items get loaded into a second MnistData struct that
+// is next to the first in memory.
+MnistData* load_data(char* label_filename, char* image_filename, uint32_t end);
 void free_mnist_data(MnistData* data);
 
 Matrix* image_to_matrix(MnistImage image);

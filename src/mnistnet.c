@@ -12,11 +12,16 @@
 int main() {
     puts("Hello world!");
 
+    // Load in the first 50000 examples as training data
+    // The remaining data is loaded as a validation set
     MnistData* training_data = load_data("data/train-labels-idx1-ubyte",
-                                         "data/train-images-idx3-ubyte");
+                                         "data/train-images-idx3-ubyte",
+                                         50000);
 
+    // Load the full test set
     MnistData* test_data = load_data("data/t10k-labels-idx1-ubyte",
-                                     "data/t10k-images-idx3-ubyte");
+                                     "data/t10k-images-idx3-ubyte",
+                                     0);
 
     PRINT_DATAHEAD((training_data));
     PRINT_DATAHEAD((test_data));
@@ -34,4 +39,7 @@ int main() {
 
     free_network(net);
     free_mnist_data(training_data);
+    free(training_data);
+    free_mnist_data(test_data);
+    free(test_data);
 }

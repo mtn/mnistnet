@@ -18,19 +18,32 @@
 
 void test_mnist_loader() {
     MnistData* training_data = load_data("data/train-labels-idx1-ubyte",
-                                         "data/train-images-idx3-ubyte");
+                                         "data/train-images-idx3-ubyte",
+                                         50000);
+
+    MnistData* validation_data = &training_data[1];
 
     MnistData* test_data = load_data("data/t10k-labels-idx1-ubyte",
-                                     "data/t10k-images-idx3-ubyte");
+                                     "data/t10k-images-idx3-ubyte",
+                                     0);
 
     // No assertions, just check that this runs
     // Magic numbers are checked normally at runtime
     // Output will be suppressed, except in verbose mode
     PRINT_DATAHEAD((training_data));
+    PRINT_DATAHEAD((validation_data));
     PRINT_DATAHEAD((test_data));
 
+    // Check that `end` works correctly
+    assert(training_data->count == 50000);
+    assert(validation_data->count == 10000);
+    assert(test_data->count == 10000);
+
     free_mnist_data(training_data);
+    free_mnist_data(validation_data);
     free_mnist_data(test_data);
+    free(training_data);
+    free(test_data);
 }
 
 void test_network_init() {
