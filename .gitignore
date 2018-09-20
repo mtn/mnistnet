@@ -3,8 +3,12 @@ mnistnet
 debug
 test
 
+# Wildcards
+*.dSYM
+*.out
 *.swp
 *.o
+
+# Scratch files
 todo.txt
 scratch.c
-*.dSYM

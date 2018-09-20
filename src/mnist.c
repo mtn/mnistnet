@@ -181,7 +181,6 @@ MnistData* load_data(char* label_filename, char* image_filename, uint32_t end) {
         data[0].labels[i] = read_label(&label_file);
         data[0].images[i] = read_image(&image_file);
     }
-    puts("hi there");
     for (uint32_t i = 0; i < label_file.header.num_items - end; i++) {
         data[1].labels[i] = read_label(&label_file);
         data[1].images[i] = read_image(&image_file);
@@ -193,6 +192,7 @@ MnistData* load_data(char* label_filename, char* image_filename, uint32_t end) {
 void free_mnist_data(MnistData* data) {
     free(data->images);
     free(data->labels);
+    // TODO own the data again by changing the api
 }
 
 Matrix* image_to_matrix(MnistImage image) {
