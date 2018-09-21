@@ -19,7 +19,7 @@ Network* create_network(int num_layers, int sizes[]);
 void free_network(Network* net);
 
 void stochastic_gradient_descent(Network* net, MnistData* training_data,
-        int num_epochs, int mini_batch_size, int eta, MnistData* test_data);
+        int num_epochs, int mini_batch_size, double eta, MnistData* test_data);
 
 Matrix* feed_forward(Network* net, Matrix* inp);
 

@@ -9,7 +9,7 @@
 #include "util.h"
 
 
-#include <assert.h> // TODO
+#include <assert.h> // TODO remove
 
 // No need to keep track of the length, sine we know it from the net
 typedef struct {
@@ -125,26 +125,37 @@ int* get_minibatch_inds(int len) {
 }
 
 Matrix* init_nabla_b(Network* net) {
-    Matrix* nabla_b = malloc(net->num_layers * sizeof(Matrix));
+    Matrix* nabla_b = malloc((net->num_layers - 1) * sizeof(Matrix));
+
+    printf("Initializing nabla b: %d matrices\n", net->num_layers - 1);
 
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_init_zeros(&nabla_b[i], net->biases[i].num_rows,
                 net->biases[i].num_cols);
 
-        PRINT_MATRIX((&nabla_b[i]));
+        /* PRINT_MATRIX((&nabla_b[i])); */
+        printf("Biases [%d]\n", i);
+        for (int q = 0; q < nabla_b[i].num_rows * nabla_b[i].num_cols; q++) {
+            printf("%.1f\n", nabla_b[i].elem[q]);
+        }
     }
 
     return nabla_b;
 }
 
 Matrix* init_nabla_w(Network* net) {
-    Matrix* nabla_w = malloc(net->num_layers * sizeof(Matrix));
+    Matrix* nabla_w = malloc((net->num_layers - 1) * sizeof(Matrix));
+    printf("Initializing nabla w: %d matrices\n", net->num_layers - 1);
 
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_init_zeros(&nabla_w[i], (&net->weights[i])->num_rows,
                 (&net->weights[i])->num_cols);
 
-        PRINT_MATRIX((&nabla_w[i]));
+        /* PRINT_MATRIX((&nabla_w[i])); */
+        printf("Weights [%d]\n", i);
+        for (int q = 0; q < nabla_w[i].num_rows * nabla_w[i].num_cols; q++) {
+            printf("%.1f\n", nabla_w[i].elem[q]);
+        }
     }
 
     return nabla_w;
@@ -155,19 +166,28 @@ Matrix* cost_derivative(Matrix* output_activations, Matrix* y) {
 }
 
 DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
+    puts("Backpropagating");
+
+    Matrix* activation = image_to_matrix(image);
+
+    assert(activation->num_rows * activation->num_cols == 784);
+    puts("Input:");
+    for (int q = 0; q < 784; q++) {
+        printf("%.6f\n", activation->elem[q]);
+    }
+    printf("Label: %d\n", label);
+
     // TODO these buffers might be leaking
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
     Matrix* label_vector = label_to_matrix(label);
-
-    Matrix* activation = image_to_matrix(image);
 
     Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
     matrix_init_from(&activations[0], activation);
 
     Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
 
-    // Feed forward
+    // Feed forward the input through the network
     for (int i = 0; i < net->num_layers - 1; i++) {
         Matrix* wa = matrix_dot(&net->weights[i], activation);
 
@@ -188,6 +208,27 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         PRINT_MATRIX((&activations[i + 1]));
     }
 
+    puts("Done appending to activations and zs");
+
+    puts("Activations:");
+    for (int q = 0; q < net->num_layers; q++) {
+        printf("Activations [%d]\n", q);
+
+        for (int r = 0; r < activations[q].num_rows * activations[q].num_cols; r++) {
+            printf("%.6f\n", activations[q].elem[r]);
+        }
+    }
+
+    puts("zs:");
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("zs [%d]\n", q);
+
+        for (int r = 0; r < zs[q].num_rows * zs[q].num_cols; r++) {
+            printf("%.6f\n", zs[q].elem[r]);
+        }
+    }
+
+
     // Backward pass
     Matrix* cost_der = cost_derivative(&activations[net->num_layers - 1], label_vector);
 
@@ -195,10 +236,36 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     matrix_sigmoid_prime_(zs_last);
     Matrix* delta = matrix_hadamard_product(NULL, cost_der, zs_last);
 
+    puts("Delta:");
+    assert(delta->num_rows == 10 && delta->num_cols == 1);
+    for (int q = 0; q < 10; q++) {
+        printf("%.6f\n", delta->elem[q]);
+    }
+
     matrix_init_from(&nabla_b[net->num_layers - 2], delta);
 
     Matrix* trans = matrix_transpose(&activations[net->num_layers - 2]);
     matrix_dot_(&nabla_w[net->num_layers - 2], delta, trans);
+
+    puts("Set the last nabla_b and nabla_w layers");
+
+    printf("nabla b (len: %d)\n", net->num_layers - 1);
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("Biases [%d]\n", q);
+
+        for (int r = 0; r < nabla_b[q].num_rows * nabla_b[q].num_cols; r++) {
+            printf("%.6f\n", nabla_b[q].elem[r]);
+        }
+    }
+
+    printf("nabla w (len: %d)\n", net->num_layers - 1);
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("Weights [%d]\n", q);
+
+        for (int r = 0; r < nabla_w[q].num_rows * nabla_w[q].num_cols; r++) {
+            printf("%.6f\n", nabla_w[q].elem[r]);
+        }
+    }
 
     matrix_free(zs_last);
     matrix_free(cost_der);
@@ -207,6 +274,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     free(cost_der);
     free(label_vector);
 
+    // TODO what's going on in here
     for (int i = 2; i < net->num_layers; i++) {
         Matrix* sp = matrix_init_from(NULL, &zs[net->num_layers - 1 - i]);
         matrix_sigmoid_prime_(sp);
@@ -242,27 +310,26 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     }
     free(zs);
 
-/*     for (int i = 0; i < net->num_layers - 1; i++) { */
-/*         double min = 0; */
-/*         for (int q = 0; q < (&nabla_b[i])->num_rows * (&nabla_b[i])->num_cols; q++) { */
-/*             if ((&nabla_b[i])->elem[q] < min) { */
-/*                 min = (&nabla_b[i])->elem[q]; */
-/*             } */
-/*         } */
 
-/*         assert(min <  0); */
-/*     } */
+    puts("Nabla b leaving backprop:");
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("nabla_b [%d]\n", q);
 
-/*     for (int i = 0; i < net->num_layers - 1; i++) { */
-/*         double min= 0; */
-/*         for (int q = 0; q < (&nabla_w[i])->num_rows * (&nabla_w[i])->num_cols; q++) { */
-/*             if ((&nabla_w[i])->elem[q] < min) { */
-/*                 min = (&nabla_w[i])->elem[q]; */
-/*             } */
-/*         } */
+        for (int r = 0; r < nabla_b[q].num_rows * nabla_b[q].num_cols; r++) {
+            printf("%.6f\n", nabla_b[q].elem[r]);
+        }
+    }
 
-/*         assert(min<0); */
-/*     } */
+    puts("Nabla w leaving backprop:");
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("nabla_w [%d]\n", q);
+
+        for (int r = 0; r < nabla_w[q].num_rows * nabla_w[q].num_cols; r++) {
+            printf("%.6f\n", nabla_w[q].elem[r]);
+        }
+    }
+
+    exit(0);
 
     return (DeltaNabla) { .b = nabla_b, .w = nabla_w };
 }
@@ -276,6 +343,7 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
 
+
     // TODO allocate this outside, rather than passing arg eta
     Matrix* step = matrix_init(NULL, 1, 1);
     step->elem[0] = (double)eta / (end - start);
@@ -284,22 +352,6 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
         int ind = minibatch_inds[j];
         DeltaNabla delta = backprop(net, training_data->images[ind],
                 training_data->labels[ind]);
-
-        /* exit(1); */
-
-        /* Matrix* nabla_b = delta.b; */
-        /* Matrix* nabla_w = delta.w; */
-        /* for (int i = 0; i < net->num_layers - 1; i++) { */
-        /*     double max; */
-        /*     for (int q = 0; q < (&nabla_w[i])->num_rows * (&nabla_w[i])->num_cols; q++) { */
-        /*         if ((&nabla_w[i])->elem[q] > max) { */
-        /*             max = (&nabla_w[i])->elem[q]; */
-        /*         } */
-        /*     } */
-
-        /*     assert(max > 0.000001); */
-        /*     printf("MAX %f\n", max); */
-        /* } */
 
         // TODO possible memory leak
         for (int i = 0; i < net->num_layers - 1; i++) {
@@ -371,25 +423,53 @@ int evaluate(Network* net, MnistData* test_data) {
 // Mini-batch stochastic gradient descent
 // test_data can be NULL (in which case the network isn't evaluated after each epoch)
 void stochastic_gradient_descent(Network* net, MnistData* training_data,
-        int num_epochs, int mini_batch_size, int eta, MnistData* test_data) {
+        int num_epochs, int mini_batch_size, double eta, MnistData* test_data) {
 
-    /* puts("Starting SGD"); */
+    puts("SGD starting");
+
+    printf("Eta: %.1f\n", eta);
+    puts("Training data labels:");
+    for (int d = 0; d < training_data->count; d++) {
+        printf("%d\n", training_data->labels[d]);
+    }
+
+    printf("Training data length: %d\n", training_data->count);
+
+    if (test_data != NULL) {
+        puts("Test data labels:");
+        for (int d = 0; d < test_data->count; d++) {
+            printf("%d\n", test_data->labels[d]);
+        }
+        
+        printf("Test data length: %d\n", test_data->count);
+    }
+
+    printf("Num epochs: %d\n", num_epochs);
     for (int j = 0; j < num_epochs; j++) {
-        /* printf("Epoch %d\n", j + 1); */
-
+        printf("Epoch: %d\n", j);
         int* minibatch_inds = get_minibatch_inds(training_data->count);
         int num_batches = training_data->count / mini_batch_size;
 
+        printf("Num batches: %d\n", num_batches);
+
+        puts("Mini batches:");
+        for (int q = 0; q < training_data->count; q++) {
+            printf("%d\n", minibatch_inds[q]);
+        }
+
         for (int i = 0; i < num_batches; i++) {
-            /* if (i % 100 == 0) { */
-            /*     printf("Epoch %d Updating minibatch %d\n", j + 1, i); */
-            /* } */
+            printf("Mini batch [%d]\n", i);
+
+            puts("Mini batch labels:");
 
             int start = mini_batch_size * i;
-            printf("Updating minibatch, start: %d\n", start);
+            for (int q = start; q < start + mini_batch_size; q++) {
+                printf("%d\n", training_data->labels[minibatch_inds[q]]);
+            }
+
+            printf("Updating mini batch %d\n", i);
             update_minibatch(net, training_data, eta, minibatch_inds, start,
                     start + mini_batch_size - 1);
-            /* exit(1); */
         }
 
         if (test_data != NULL) {

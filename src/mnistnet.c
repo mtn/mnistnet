@@ -86,8 +86,6 @@ int main() {
         }
     }
 
-    exit(0);
-
     // Just one epoch, large minibatches
     stochastic_gradient_descent(net, training_data, 1, 10, 3.0, test_data);
 
