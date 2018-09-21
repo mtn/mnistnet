@@ -186,6 +186,9 @@ MnistData* load_data(char* label_filename, char* image_filename, uint32_t end) {
         data[1].images[i] = read_image(&image_file);
     }
 
+    fclose(image_file.fp);
+    fclose(label_file.fp);
+
     return data;
 }
 

@@ -44,9 +44,13 @@ Matrix* matrix_init_from(Matrix* m, Matrix* from) {
     return m;
 }
 
+// Writes into dest
 Matrix* matrix_into(Matrix* dest, Matrix* from) {
     if (dest == NULL) {
         dest = malloc(sizeof(Matrix));
+    } else {
+        // If dest is already a matrix, free its buffer
+        matrix_free(dest);
     }
 
     dest->num_rows = from->num_rows;

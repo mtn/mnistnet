@@ -251,7 +251,7 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b) {
 // TODO It would be nice to allow this to be done in place, since the memory layout of
 // a matrix and its transpose are the same. The implementation is more complicated,
 // so for now I'm just doing another allocation and forcing the caller to be responsible
-// for the m
+// for the input
 Matrix* matrix_transpose(Matrix* m) {
     Matrix* trans = matrix_init(NULL, m->num_cols, m->num_rows);
 

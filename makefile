@@ -22,7 +22,7 @@ lldb: debug_info mnistnet
 mnistnet: clean exe_mode $(obj) $(lib)
 	$(CC) -o $@ $(obj) $(CFLAGS)
 
-valgrind: debug_info mnistnet
+valgrind: clean debug_info mnistnet
 	echo "Start of output"
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./mnistnet
 
