@@ -10,9 +10,6 @@ lib = $(wildcard include/*.h)
 obj = $(src:.c=.o)
 
 
-trace: mnistnet
-	./mnistnet > data.out
-
 run: mnistnet
 	./mnistnet
 
