@@ -329,8 +329,6 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
         }
     }
 
-    exit(0);
-
     return (DeltaNabla) { .b = nabla_b, .w = nabla_w };
 }
 
@@ -343,10 +341,9 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
     Matrix* nabla_b = init_nabla_b(net);
     Matrix* nabla_w = init_nabla_w(net);
 
-
     // TODO allocate this outside, rather than passing arg eta
     Matrix* step = matrix_init(NULL, 1, 1);
-    step->elem[0] = (double)eta / (end - start);
+    step->elem[0] = (double)eta / (end - start + 1);
 
     for (int j = start; j <= end; j++) {
         int ind = minibatch_inds[j];
@@ -359,22 +356,66 @@ void update_minibatch(Network* net, MnistData* training_data, int eta,
             matrix_into(&nabla_w[i], matrix_add(&nabla_w[i], &(delta.w)[i]));
         }
 
-        for (int i = 0; i < net->num_layers - 1; i++) {
-            Matrix* prod = matrix_hadamard_product(NULL, step, &nabla_w[i]);
-            Matrix* sub = matrix_subtract(&net->weights[i], prod);
-            matrix_into(&net->weights[i], sub);
+        puts("Nabla b after backprop in update_minibatch");
+        for (int q = 0; q < net->num_layers - 1; q++) {
+            printf("nabla_b [%d]\n", q);
 
-            matrix_free(prod);
-            free(prod);
+            for (int r = 0; r < nabla_b[q].num_rows * nabla_b[q].num_cols; r++) {
+                printf("%.6f\n", nabla_b[q].elem[r]);
+            }
+        }
 
-            prod = matrix_hadamard_product(NULL, step, &nabla_b[i]);
-            sub = matrix_subtract(&net->biases[i], prod);
-            matrix_into(&net->biases[i], sub);
+        puts("Nabla w after backprop in update_minibatch");
+        for (int q = 0; q < net->num_layers - 1; q++) {
+            printf("nabla_w [%d]\n", q);
 
-            matrix_free(prod);
-            free(prod);
+            for (int r = 0; r < nabla_w[q].num_rows * nabla_w[q].num_cols; r++) {
+                printf("%.6f\n", nabla_w[q].elem[r]);
+            }
         }
     }
+
+    assert(step->num_rows == 1 && step->num_cols == 1);
+    printf("Step: %.6f\n", step->elem[0]);
+    printf("Length minibatch: %d\n", end - start + 1);
+
+
+    for (int i = 0; i < net->num_layers - 1; i++) {
+        Matrix* prod = matrix_hadamard_product(NULL, step, &nabla_w[i]);
+        Matrix* sub = matrix_subtract(&net->weights[i], prod);
+        matrix_into(&net->weights[i], sub);
+
+        // TODO memleak sub?
+        matrix_free(prod);
+        free(prod);
+
+        prod = matrix_hadamard_product(NULL, step, &nabla_b[i]);
+        sub = matrix_subtract(&net->biases[i], prod);
+        matrix_into(&net->biases[i], sub);
+
+        matrix_free(prod);
+        free(prod);
+    }
+
+    puts("Biases at the end of update_minibatch");
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("Biases [%d]\n", q);
+
+        for (int r = 0; r < net->biases[q].num_rows * net->biases[q].num_cols; r++) {
+            printf("%.6f\n", net->biases[q].elem[r]);
+        }
+    }
+
+    puts("Weights at the end of update_minibatch");
+    for (int q = 0; q < net->num_layers - 1; q++) {
+        printf("Weights [%d]\n", q);
+
+        for (int r = 0; r < net->weights[q].num_rows * net->weights[q].num_cols; r++) {
+            printf("%.6f\n", net->weights[q].elem[r]);
+        }
+    }
+
+    exit(0);
 
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_free(&nabla_b[i]);
