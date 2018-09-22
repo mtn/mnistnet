@@ -8,8 +8,6 @@
 #include "nmath.h"
 #include "util.h"
 
-#include <assert.h> // TODO removeme
-
 // No need to keep track of the length, sine we know it from the net
 typedef struct {
     Matrix* b;
@@ -17,15 +15,11 @@ typedef struct {
 } DeltaNabla;
 
 
-double zero() {
-    return 0;
-}
-
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
     // Each row has a bias matrix (vector)
-    net->biases = malloc((net->num_layers - 1) * sizeof(Matrix));
+    net->biases = matrix_init_shallow(net->num_layers - 1);
     for (int i = 0; i < net->num_layers - 1; i++) {
         // Initialize a column vector with {# nodes in next row} nodes
         matrix_init(&net->biases[i], net->sizes[i + 1], 1);
@@ -37,11 +31,10 @@ void init_biases(Network* net) {
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_weights(Network* net) {
     // Each row has a weights matrix
-    net->weights = malloc((net->num_layers - 1) * sizeof(Matrix));
+    net->weights = matrix_init_shallow(net->num_layers - 1);
     for (int i = 1; i < net->num_layers; i++) {
         matrix_init(&net->weights[i - 1], net->sizes[i], net->sizes[i - 1]);
-        /* matrix_init_buffer(&net->weights[i - 1], &stdnormal); */
-        matrix_init_buffer(&net->weights[i - 1], &zero);
+        matrix_init_buffer(&net->weights[i - 1], &stdnormal);
     }
 }
 
@@ -109,7 +102,7 @@ int* get_minibatch_inds(int len) {
 }
 
 Matrix* init_nabla_b(Network* net) {
-    Matrix* nabla_b = malloc((net->num_layers - 1) * sizeof(Matrix));
+    Matrix* nabla_b = matrix_init_shallow(net->num_layers - 1);
 
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_init_zeros(&nabla_b[i], net->biases[i].num_rows,
@@ -120,7 +113,7 @@ Matrix* init_nabla_b(Network* net) {
 }
 
 Matrix* init_nabla_w(Network* net) {
-    Matrix* nabla_w = malloc((net->num_layers - 1) * sizeof(Matrix));
+    Matrix* nabla_w = matrix_init_shallow(net->num_layers - 1);
 
     for (int i = 0; i < net->num_layers - 1; i++) {
         matrix_init_zeros(&nabla_w[i], (&net->weights[i])->num_rows,
@@ -169,7 +162,6 @@ void bp_backwards_pass(Network* net, Matrix* label_vector, Matrix* activations,
     matrix_init_from(&nabla_b[net->num_layers - 2], delta);
 
     Matrix* trans = matrix_transpose(&activations[net->num_layers - 2]);
-    assert(nabla_w[net->num_layers - 2].elem == NULL);
     matrix_dot_(&nabla_w[net->num_layers - 2], delta, trans);
 
     matrix_free(zs_last);
@@ -186,29 +178,19 @@ void bp_backwards_pass(Network* net, Matrix* label_vector, Matrix* activations,
         matrix_sigmoid_prime_(sp);
 
         trans = matrix_transpose(&net->weights[net->num_layers - i]);
-
-        double* tmp = delta->elem;
         matrix_dot_(delta, trans, delta);
-        free(tmp);
-
-        // Somewhat ugly, but we have to keep a reference to the buffer
-        // since the current API doesn't take ownership
-        tmp = delta->elem;
         matrix_hadamard_product(delta, delta, sp);
-        free(tmp);
 
         matrix_free(trans);
         matrix_free(sp);
         free(trans);
         free(sp);
 
-        assert(nabla_b[net->num_layers - i - 1].elem == NULL);
         matrix_init_from(&nabla_b[net->num_layers - i - 1], delta);
 
         trans = matrix_transpose(&activations[net->num_layers - i - 1]);
         Matrix* dotted = matrix_dot(delta, trans);
 
-        assert(nabla_w[net->num_layers - i - 1].elem == NULL);
         matrix_init_from(&nabla_w[net->num_layers - 1 - i], dotted);
         matrix_free(trans);
         matrix_free(dotted);
@@ -220,13 +202,26 @@ void bp_backwards_pass(Network* net, Matrix* label_vector, Matrix* activations,
     free(delta);
 }
 
+// Cleans up memory (activations and zs) allocated in backprop
+void bp_cleanup(int num_layers, Matrix* activations, Matrix* zs) {
+    for (int i = 0; i < num_layers; i++) {
+        matrix_free(&activations[i]);
+    }
+    free(activations);
+
+    for (int i = 0; i < num_layers - 1; i++) {
+        matrix_free(&zs[i]);
+    }
+    free(zs);
+}
+
 DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* activation = image_to_matrix(image);
 
-    Matrix* nabla_b = calloc(net->num_layers - 1, sizeof(Matrix));
-    Matrix* nabla_w = calloc(net->num_layers - 1, sizeof(Matrix));
-    Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
-    Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
+    Matrix* nabla_b = matrix_init_shallow(net->num_layers - 1);
+    Matrix* nabla_w = matrix_init_shallow(net->num_layers - 1);
+    Matrix* activations = matrix_init_shallow(net->num_layers);
+    Matrix* zs = matrix_init_shallow(net->num_layers - 1);
 
     Matrix* label_vector = label_to_matrix(label);
     matrix_init_from(&activations[0], activation);
@@ -238,15 +233,7 @@ DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     // Backward pass
     bp_backwards_pass(net, label_vector, activations, zs, nabla_b, nabla_w);
 
-    for (int i = 0; i < net->num_layers; i++) {
-        matrix_free(&activations[i]);
-    }
-    free(activations);
-
-    for (int i = 0; i < net->num_layers - 1; i++) {
-        matrix_free(&zs[i]);
-    }
-    free(zs);
+    bp_cleanup(net->num_layers, activations, zs);
 
     return (DeltaNabla) { .b = nabla_b, .w = nabla_w };
 }

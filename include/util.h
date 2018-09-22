@@ -9,6 +9,9 @@ typedef struct {
     double* elem;
 } Matrix;
 
+// Allocate `count` contiguous matrices, without initializing elem or size information
+// A matrix is considered uninitialized everywhere if m->elem == NULL
+Matrix* matrix_init_shallow(int count);
 // Initialize a matrix
 Matrix* matrix_init(Matrix* m, int num_rows, int num_cols);
 // Zero-initialize a matrix with a given size (like to np.zeros)

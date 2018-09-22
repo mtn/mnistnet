@@ -4,11 +4,39 @@
 #include "util.h"
 #include "macros.h"
 
+#include <stdio.h>
 
-Matrix* matrix_init(Matrix* m, int num_rows, int num_cols) {
+// Allocates a matrix if necessary, and claims the buffer if the matrix is already
+// initialized. This prepares destination pointers to take a new buffer without leaking
+// memory.
+Matrix* alloc_or_own(Matrix* m) {
     if (m == NULL) {
         m = malloc(sizeof(Matrix));
+        m->elem = NULL;
+    } else if (m->elem != NULL) {
+        matrix_free(m);
     }
+
+    return m;
+}
+
+Matrix* matrix_init_shallow(int count) {
+    if (count <= 0) {
+        return NULL;
+    }
+
+    Matrix* ms = malloc(sizeof(Matrix) * count);
+
+    // Ensure the elem pointer is null, so we know these matrices are uninitialized
+    for (int i = 0; i < count; i++) {
+        ms[i].elem = NULL;
+    }
+
+    return ms;
+}
+
+Matrix* matrix_init(Matrix* m, int num_rows, int num_cols) {
+    m = alloc_or_own(m);
 
     m->num_rows = num_rows;
     m->num_cols= num_cols;
@@ -19,9 +47,7 @@ Matrix* matrix_init(Matrix* m, int num_rows, int num_cols) {
 
 // Creates (or updates) a matrix and initializes its values to zero
 Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols) {
-    if (m == NULL) {
-        m = malloc(sizeof(Matrix));
-    }
+    m = alloc_or_own(m);
 
     m->num_rows = num_rows;
     m->num_cols = num_cols;
@@ -34,9 +60,7 @@ Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols) {
 // the caller is responsible for handling its buffer, if there was one
 Matrix* matrix_init_from(Matrix* m, Matrix* from) {
     // If a matrix is passed in, it's buffer is assumed to be correctly size
-    if (m == NULL) {
-        m = malloc(sizeof(Matrix));
-    }
+    m = alloc_or_own(m);
 
     matrix_init(m, from->num_rows, from->num_cols);
     memcpy(m->elem, from->elem, from->num_rows * from->num_cols * sizeof(double));
@@ -46,12 +70,7 @@ Matrix* matrix_init_from(Matrix* m, Matrix* from) {
 
 // Writes into dest
 Matrix* matrix_into(Matrix* dest, Matrix* from) {
-    if (dest == NULL) {
-        dest = malloc(sizeof(Matrix));
-    } else {
-        // If dest is already a matrix, free its buffer
-        matrix_free(dest);
-    }
+    dest = alloc_or_own(dest);
 
     dest->num_rows = from->num_rows;
     dest->num_cols = from->num_cols;
@@ -83,6 +102,7 @@ int matrix_get_ind(Matrix* m, int row, int col) {
 void matrix_free(Matrix* m) {
     free(m->elem);
 }
+
 // Source: https://stackoverflow.com/a/6127606/2608433
 void shuffle_ints_(int* array, int len) {
     if (len > 1) {
