@@ -55,19 +55,4 @@
 
 #endif /* DEBUG */
 
-#define P_MATRIX(m) printf("[\n\t"); \
-    for (int __print_matrix_i = 0; __print_matrix_i < m->num_rows; __print_matrix_i++) { \
-        for (int __print_matrix_j = 0; __print_matrix_j < m->num_cols; __print_matrix_j++) { \
-            printf("%f, ", m->elem[__print_matrix_i * (m)->num_cols + __print_matrix_j]); \
-            if (__print_matrix_j == m->num_cols - 1) { \
-                printf("\n"); \
-                if (__print_matrix_i != m->num_rows - 1) { \
-                    printf("\t"); \
-                } \
-                continue; \
-            } \
-        } \
-    } \
-    printf("]\n")
-
 #endif /* __MACROS_H__ */

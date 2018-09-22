@@ -409,7 +409,6 @@ void test_matrix_add_2() {
     m2->elem[9] = 0;
 
     Matrix* m3 = matrix_add(m1, m2);
-    P_MATRIX(m3);
 
     assert(m3->elem[0] == 0.952574);
     assert(m3->elem[1] == 0.119203);

@@ -79,8 +79,6 @@ void check_multiplication_compatability(Matrix* a, Matrix* b) {
 
 Matrix* matrix_multiply(Matrix* dest, Matrix* a, Matrix* b) {
     check_multiplication_compatability(a, b);
-    DEBUG_PRINT(("Matrix multiply\n"));
-
     // Dest could be aliases with a or b, so we store pointers to their buffers
     double* a_buf = a->elem;
     double* b_buf = b->elem;
@@ -226,24 +224,12 @@ double negate(double x) {
 // The problem is that broadcasting might make in-place addition/subtraction tricky
 // For now, I'm just doing an additional allocation + deallocation
 Matrix* matrix_subtract(Matrix* a, Matrix* b) {
-    DEBUG_PRINT(("Subtracting matrices: \n"));
-    PRINT_MATRIX(a);
-    DEBUG_PRINT(("-\n"));
-    PRINT_MATRIX(b);
-    DEBUG_PRINT(("\n"));
-
     Matrix* neg = matrix_init_from(NULL, b);
     matrix_map_(neg, &negate);
-
-    DEBUG_PRINT(("b negated: \n"));
-    PRINT_MATRIX(neg);
 
     Matrix* res = matrix_add(a, neg);
     matrix_free(neg);
     free(neg);
-
-    DEBUG_PRINT(("Result: \n"));
-    PRINT_MATRIX((res));
 
     return res;
 }

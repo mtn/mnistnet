@@ -8,6 +8,7 @@
 #include "nmath.h"
 #include "util.h"
 
+#include <assert.h> // TODO removeme
 
 // No need to keep track of the length, sine we know it from the net
 typedef struct {
@@ -23,35 +24,24 @@ double zero() {
 // Initialize bias vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_biases(Network* net) {
-    DEBUG_PRINT(("\nInitializing bias vectors:\n"));
-
     // Each row has a bias matrix (vector)
     net->biases = malloc((net->num_layers - 1) * sizeof(Matrix));
     for (int i = 0; i < net->num_layers - 1; i++) {
         // Initialize a column vector with {# nodes in next row} nodes
         matrix_init(&net->biases[i], net->sizes[i + 1], 1);
         matrix_init_buffer(&net->biases[i], &stdnormal);
-        /* matrix_init_buffer(&net->biases[i], &zero); */
-
-        PRINT_MATRIX((&net->biases[i]));
     }
 }
 
 // Initialize weight vectors
 // Assumes that net->sizes and net->num_layers are properly initialized
 void init_weights(Network* net) {
-    DEBUG_PRINT(("\nInitializing weights:\n"));
-
     // Each row has a weights matrix
     net->weights = malloc((net->num_layers - 1) * sizeof(Matrix));
     for (int i = 1; i < net->num_layers; i++) {
-        DEBUG_PRINT(("Layer %d-%d:\n", i, i + 1));
-
         matrix_init(&net->weights[i - 1], net->sizes[i], net->sizes[i - 1]);
         /* matrix_init_buffer(&net->weights[i - 1], &stdnormal); */
         matrix_init_buffer(&net->weights[i - 1], &zero);
-
-        PRINT_MATRIX((&net->weights[i - 1]));
     }
 }
 
@@ -175,9 +165,11 @@ void bp_backwards_pass(Network* net, Matrix* label_vector, Matrix* activations,
     Matrix* zs_last = matrix_init_from(NULL, &zs[net->num_layers - 2]);
     matrix_sigmoid_prime_(zs_last);
     Matrix* delta = matrix_hadamard_product(NULL, cost_der, zs_last);
+
     matrix_init_from(&nabla_b[net->num_layers - 2], delta);
 
     Matrix* trans = matrix_transpose(&activations[net->num_layers - 2]);
+    assert(nabla_w[net->num_layers - 2].elem == NULL);
     matrix_dot_(&nabla_w[net->num_layers - 2], delta, trans);
 
     matrix_free(zs_last);
@@ -195,17 +187,28 @@ void bp_backwards_pass(Network* net, Matrix* label_vector, Matrix* activations,
 
         trans = matrix_transpose(&net->weights[net->num_layers - i]);
 
+        double* tmp = delta->elem;
         matrix_dot_(delta, trans, delta);
+        free(tmp);
+
+        // Somewhat ugly, but we have to keep a reference to the buffer
+        // since the current API doesn't take ownership
+        tmp = delta->elem;
         matrix_hadamard_product(delta, delta, sp);
+        free(tmp);
 
         matrix_free(trans);
+        matrix_free(sp);
         free(trans);
+        free(sp);
 
+        assert(nabla_b[net->num_layers - i - 1].elem == NULL);
         matrix_init_from(&nabla_b[net->num_layers - i - 1], delta);
 
         trans = matrix_transpose(&activations[net->num_layers - i - 1]);
         Matrix* dotted = matrix_dot(delta, trans);
 
+        assert(nabla_w[net->num_layers - i - 1].elem == NULL);
         matrix_init_from(&nabla_w[net->num_layers - 1 - i], dotted);
         matrix_free(trans);
         matrix_free(dotted);
@@ -220,8 +223,8 @@ void bp_backwards_pass(Network* net, Matrix* label_vector, Matrix* activations,
 DeltaNabla backprop(Network* net, MnistImage image, MnistLabel label) {
     Matrix* activation = image_to_matrix(image);
 
-    Matrix* nabla_b = malloc((net->num_layers - 1) * sizeof(Matrix));
-    Matrix* nabla_w = malloc((net->num_layers - 1) * sizeof(Matrix));
+    Matrix* nabla_b = calloc(net->num_layers - 1, sizeof(Matrix));
+    Matrix* nabla_w = calloc(net->num_layers - 1, sizeof(Matrix));
     Matrix* activations = malloc(net->num_layers * sizeof(Matrix));
     Matrix* zs = malloc((net->num_layers - 1) * sizeof(Matrix));
 
@@ -272,10 +275,13 @@ void update_minibatch(Network* net, MnistData* training_data, Matrix* step,
         for (int i = 0; i < net->num_layers - 1; i++) {
             matrix_into(&nabla_b[i], matrix_add(&nabla_b[i], &(delta.b)[i]));
             matrix_into(&nabla_w[i], matrix_add(&nabla_w[i], &(delta.w)[i]));
+
+            matrix_free(&(delta.b)[i]);
+            matrix_free(&(delta.w)[i]);
         }
 
-        matrix_free(delta.b);
-        matrix_free(delta.w);
+        free(delta.b);
+        free(delta.w);
     }
 
     for (int i = 0; i < net->num_layers - 1; i++) {
@@ -340,7 +346,6 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
 
         int* minibatch_inds = get_minibatch_inds(training_data->count);
         for (int i = 0; i < num_batches; i++) {
-            fprintf(stderr, "hi\n");
             int start = mini_batch_size * i;
 
             if (i % 1000 == 0) {
@@ -350,23 +355,16 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
 
             update_minibatch(net, training_data, step, minibatch_inds, start,
                     start + mini_batch_size - 1);
-
-            fprintf(stderr, "there\n");
-            // TODO removeme
-            j = num_epochs;
-            break;
         }
 
-        /* if (test_data != NULL) { */
-        /*     fprintf(stderr, "Epoch %d: %d / %d\n", j, evaluate(net, test_data), */
-        /*             test_data->count); */
-        /* } else { */
-        /*     fprintf(stderr, "Epoch %d complete\n", j); */
-        /* } */
+        if (test_data != NULL) {
+            fprintf(stderr, "Epoch %d: %d / %d\n", j, evaluate(net, test_data),
+                    test_data->count);
+        } else {
+            fprintf(stderr, "Epoch %d complete\n", j);
+        }
 
         free(minibatch_inds);
-        fprintf(stderr, "breaking\n");
-        break;
     }
 
     matrix_free(step);

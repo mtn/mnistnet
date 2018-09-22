@@ -17,7 +17,7 @@ Matrix* matrix_init(Matrix* m, int num_rows, int num_cols) {
     return m;
 }
 
-// Creates (or updated) a matrix and initializes its values to zero
+// Creates (or updates) a matrix and initializes its values to zero
 Matrix* matrix_init_zeros(Matrix* m, int num_rows, int num_cols) {
     if (m == NULL) {
         m = malloc(sizeof(Matrix));
