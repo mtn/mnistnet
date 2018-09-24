@@ -191,13 +191,13 @@ MnistData* load_data_subset(char* label_filename, char* image_filename,
 
     uint32_t num_items = label_file.header.num_items;
     assert(end - start <= num_items && end <= num_items);
-    MnistData* data = init_data(NULL, num_items);
+    MnistData* data = init_data(NULL, end - start);
 
     // Advance the file pointer forward so we start reading from the correct part
     fseek(label_file.fp, sizeof(MnistLabel) * start, SEEK_CUR);
     fseek(image_file.fp, sizeof(MnistImage) * start, SEEK_CUR);
 
-    for (uint32_t i = 0; i < num_items; i++) {
+    for (uint32_t i = 0; i < end - start; i++) {
         data->labels[i] = read_label(&label_file);
         data->images[i] = read_image(&image_file);
     }
@@ -211,7 +211,7 @@ MnistData* load_data_subset(char* label_filename, char* image_filename,
 void free_mnist_data(MnistData* data) {
     free(data->images);
     free(data->labels);
-    // TODO own the data again by changing the api
+    free(data);
 }
 
 Matrix* image_to_matrix(MnistImage image) {

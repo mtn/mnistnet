@@ -34,10 +34,8 @@ int main() {
 
     stochastic_gradient_descent(net, training_data, 30, 10, 3.0, test_data);
 
-    free_network(net);
     free_mnist_data(training_data);
-    free_mnist_data(&training_data[1]);
-    free(training_data);
+    free_mnist_data(validation_data);
     free_mnist_data(test_data);
-    free(test_data);
+    free_network(net);
 }
