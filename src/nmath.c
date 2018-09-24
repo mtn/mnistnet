@@ -83,6 +83,12 @@ Matrix* matrix_multiply(Matrix* dest, Matrix* a, Matrix* b) {
     double* a_buf = a->elem;
     double* b_buf = b->elem;
 
+    // Dest becomes owned, so we need to check explicitly for aliasing and allocate
+    // a new buffer the pointers were aliased
+    if (dest == a || dest == b) {
+        dest = NULL;
+    }
+
     Matrix* m = matrix_init(dest, a->num_rows, b->num_cols);
 
     for (int i = 0; i < a->num_rows; i++) {

@@ -30,11 +30,11 @@ valgrind: clean debug_info mnistnet
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./mnistnet
 
 test: clean debug_mode $(test_obj) $(lib)
-	$(CC) -o $@ $(obj) $(CFLAGS)
+	$(CC) -o $@ $(test_obj) $(CFLAGS)
 	./test
 
 debug: clean exe_mode debug_mode $(exe_obj) $(lib)
-	$(CC) -o $@ $(obj) $(CFLAGS)
+	$(CC) -o $@ $(exe_obj) $(CFLAGS)
 
 debug_mode:
 	$(eval CFLAGS += -D DEBUG)

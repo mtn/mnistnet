@@ -32,7 +32,7 @@ int main() {
 
     Network* net = create_network(3, sizes);
 
-    stochastic_gradient_descent(net, training_data, 30, 10, 3.0, test_data);
+    stochastic_gradient_descent(net, training_data, 1, 10, 3.0, test_data);
 
     free_mnist_data(training_data);
     free_mnist_data(validation_data);

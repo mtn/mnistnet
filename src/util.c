@@ -4,7 +4,6 @@
 #include "util.h"
 #include "macros.h"
 
-#include <stdio.h>
 
 // Allocates a matrix if necessary, and claims the buffer if the matrix is already
 // initialized. This prepares destination pointers to take a new buffer without leaking

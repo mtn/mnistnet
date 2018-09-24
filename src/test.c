@@ -17,22 +17,19 @@
 
 
 void test_mnist_loader() {
-    MnistData* training_data = load_data("data/train-labels-idx1-ubyte",
-                                         "data/train-images-idx3-ubyte",
-                                         50000);
+    MnistData* training_data = load_data_subset("data/train-labels-idx1-ubyte",
+                                                "data/train-images-idx3-ubyte",
+                                                0, 50000);
 
-    MnistData* validation_data = &training_data[1];
+    MnistData* validation_data = load_data_subset("data/train-labels-idx1-ubyte",
+                                                  "data/train-images-idx3-ubyte",
+                                                  50000, 60000);
 
     MnistData* test_data = load_data("data/t10k-labels-idx1-ubyte",
-                                     "data/t10k-images-idx3-ubyte",
-                                     0);
+                                     "data/t10k-images-idx3-ubyte");
 
-    // No assertions, just check that this runs
     // Magic numbers are checked normally at runtime
     // Output will be suppressed, except in verbose mode
-    PRINT_DATAHEAD((training_data));
-    PRINT_DATAHEAD((validation_data));
-    PRINT_DATAHEAD((test_data));
 
     // Check that `end` works correctly
     assert(training_data->count == 50000);
@@ -42,8 +39,40 @@ void test_mnist_loader() {
     free_mnist_data(training_data);
     free_mnist_data(validation_data);
     free_mnist_data(test_data);
-    free(training_data);
-    free(test_data);
+}
+
+void test_mnist_loader_subset_values() {
+    MnistData* training_data = load_data_subset("data/train-labels-idx1-ubyte",
+                                                "data/train-images-idx3-ubyte",
+                                                0, 50000);
+
+    MnistData* validation_data = load_data_subset("data/train-labels-idx1-ubyte",
+                                                  "data/train-images-idx3-ubyte",
+                                                  50000, 60000);
+
+
+    MnistData* full = load_data("data/train-labels-idx1-ubyte",
+                                "data/train-images-idx3-ubyte");
+
+    for (int i = 0; i < 50000; i++) {
+        assert(training_data->labels[i] == full->labels[i]);
+
+        for (int j = 0; j < 784; j++) {
+            assert(training_data->images[i].pixels[j] == full->images[i].pixels[j]);
+        }
+    }
+
+    for (int i = 50000; i < 60000; i++) {
+        assert(validation_data->labels[i - 50000] == full->labels[i]);
+
+        for (int j = 0; j < 784; j++) {
+            assert(validation_data->images[i - 50000].pixels[j] == full->images[i].pixels[j]);
+        }
+    }
+
+    free_mnist_data(training_data);
+    free_mnist_data(validation_data);
+    free_mnist_data(full);
 }
 
 void test_network_init() {
@@ -230,8 +259,6 @@ void test_matrix_dot_under_aliasing() {
     }
 
     a = matrix_dot_(a, a, a);
-
-    PRINT_MATRIX(a);
 
     assert(a->elem[0] == 7);
     assert(a->elem[1] == 10);
@@ -889,6 +916,7 @@ int main () {
     puts("Running tests");
 
     run(&test_mnist_loader);
+    run(&test_mnist_loader_subset_values);
     run(&test_network_init);
     run(&test_matrix_init_from);
     run(&test_matrix_init_zeros);
