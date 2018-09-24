@@ -2,6 +2,7 @@
 #define __MNIST_H__
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #include "util.h"
 
@@ -23,10 +24,10 @@ typedef struct {
 
 
 // Load data in memory from file names
-// `end` allows loading less than the full data file into a struct.
-// The remaining items get loaded into a second MnistData struct that
-// is next to the first in memory.
-MnistData* load_data(char* label_filename, char* image_filename, uint32_t end);
+// Optionally accepts a start and end index
+MnistData* load_data(char* label_filename, char* image_filename);
+MnistData* load_data_subset(char* label_filename, char* image_filename,
+        uint32_t start, uint32_t end);
 void free_mnist_data(MnistData* data);
 
 Matrix* image_to_matrix(MnistImage image);

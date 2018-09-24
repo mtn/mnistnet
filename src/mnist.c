@@ -150,40 +150,56 @@ MnistImageFile open_image_file(char* filename) {
     return (MnistImageFile){ .fp = image_file, .header = header };
 }
 
-void init_data(MnistData* data, int count) {
+MnistData* init_data(MnistData* data, int count) {
+    if (data == NULL) {
+        data = malloc(sizeof(MnistData));
+    }
+
     data->count = count;
     data->images = malloc(count * sizeof(MnistImage));
     data->labels = malloc(count * sizeof(MnistLabel));
+
+    return data;
 }
 
-MnistData* load_data(char* label_filename, char* image_filename, uint32_t end) {
-    MnistData* data;
+MnistData* load_data(char* label_filename, char* image_filename) {
+    MnistLabelFile label_file = open_label_file(label_filename);
+    MnistImageFile image_file = open_image_file(image_filename);
+
+    assert(label_file.header.num_items == image_file.header.num_images);
+    uint32_t num_items = label_file.header.num_items;
+    MnistData* data = init_data(NULL, num_items);
+
+    for (uint32_t i = 0; i < num_items; i++) {
+        data->labels[i] = read_label(&label_file);
+        data->images[i] = read_image(&image_file);
+    }
+
+    fclose(image_file.fp);
+    fclose(label_file.fp);
+
+    return data;
+}
+
+MnistData* load_data_subset(char* label_filename, char* image_filename,
+        uint32_t start, uint32_t end) {
 
     MnistLabelFile label_file = open_label_file(label_filename);
     MnistImageFile image_file = open_image_file(image_filename);
 
     assert(label_file.header.num_items == image_file.header.num_images);
 
-    if (end == 0 || end == label_file.header.num_items) {
-        end = label_file.header.num_items;
-        data = malloc(sizeof(MnistData));
-        init_data(data, label_file.header.num_items);
-    } else {
-        assert(end < label_file.header.num_items);
+    uint32_t num_items = label_file.header.num_items;
+    assert(end - start <= num_items && end <= num_items);
+    MnistData* data = init_data(NULL, num_items);
 
-        // Read the remainder into a second continguous struct
-        data = malloc(2 * sizeof(MnistData));
-        init_data(&data[0], end);
-        init_data(&data[1], label_file.header.num_items - end);
-    }
+    // Advance the file pointer forward so we start reading from the correct part
+    fseek(label_file.fp, sizeof(MnistLabel) * start, SEEK_CUR);
+    fseek(image_file.fp, sizeof(MnistImage) * start, SEEK_CUR);
 
-    for (uint32_t i = 0; i < end; i++) {
-        data[0].labels[i] = read_label(&label_file);
-        data[0].images[i] = read_image(&image_file);
-    }
-    for (uint32_t i = 0; i < label_file.header.num_items - end; i++) {
-        data[1].labels[i] = read_label(&label_file);
-        data[1].images[i] = read_image(&image_file);
+    for (uint32_t i = 0; i < num_items; i++) {
+        data->labels[i] = read_label(&label_file);
+        data->images[i] = read_image(&image_file);
     }
 
     fclose(image_file.fp);

@@ -12,14 +12,18 @@
 int main() {
     // Load in the first 50000 examples as training data
     // The remaining data is loaded as a validation set at &training_data[1]
-    MnistData* training_data = load_data("data/train-labels-idx1-ubyte",
-                                         "data/train-images-idx3-ubyte",
-                                         50000);
+    MnistData* training_data = load_data_subset("data/train-labels-idx1-ubyte",
+                                                "data/train-images-idx3-ubyte",
+                                                0, 50000);
+
+    MnistData* validation_data = load_data_subset("data/train-labels-idx1-ubyte",
+                                                  "data/train-images-idx3-ubyte",
+                                                  50001, 60000);
+
 
     // Load the full test set (0 loads everything)
     MnistData* test_data = load_data("data/t10k-labels-idx1-ubyte",
-                                     "data/t10k-images-idx3-ubyte",
-                                     0);
+                                     "data/t10k-images-idx3-ubyte");
 
     int sizes[3];
     sizes[0] = 784;
@@ -28,7 +32,7 @@ int main() {
 
     Network* net = create_network(3, sizes);
 
-    stochastic_gradient_descent(net, training_data, 10, 10, 3.0, test_data);
+    stochastic_gradient_descent(net, training_data, 30, 10, 3.0, test_data);
 
     free_network(net);
     free_mnist_data(training_data);
