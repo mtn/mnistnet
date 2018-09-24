@@ -79,30 +79,40 @@ void check_multiplication_compatability(Matrix* a, Matrix* b) {
 
 Matrix* matrix_multiply(Matrix* dest, Matrix* a, Matrix* b) {
     check_multiplication_compatability(a, b);
+    
     // Dest could be aliases with a or b, so we store pointers to their buffers
     double* a_buf = a->elem;
     double* b_buf = b->elem;
 
-    // Dest becomes owned, so we need to check explicitly for aliasing and allocate
-    // a new buffer the pointers were aliased
+    // If pointers are aliased, we take ownership of dest's buffer and allocate a new
+    // one. If we do this we also keep a reference to it for freeing. This means that
+    // matrix_multiply can modify the multiplicands
+    double* dest_buf = NULL;
     if (dest == a || dest == b) {
-        dest = NULL;
+        dest_buf = dest->elem;
+        dest->elem = NULL;
     }
 
-    Matrix* m = matrix_init(dest, a->num_rows, b->num_cols);
+    dest = matrix_init(dest, a->num_rows, b->num_cols);
 
     for (int i = 0; i < a->num_rows; i++) {
         for (int j = 0; j < b->num_cols; j++) {
-            m->elem[matrix_get_ind(m, i, j)] = 0;
+            dest->elem[matrix_get_ind(dest, i, j)] = 0;
 
             for (int k = 0; k < a->num_cols; k++) {
-                m->elem[matrix_get_ind(m, i, j)] += a_buf[matrix_get_ind(a, i, k)]
+                dest->elem[matrix_get_ind(dest, i, j)] += a_buf[matrix_get_ind(a, i, k)]
                     * b_buf[matrix_get_ind(b, k, j)];
             }
         }
     }
 
-    return m;
+    // If pointers were aliased, we no longer would have a reference
+    // to the buffer
+    if (dest_buf) {
+        free(dest_buf);
+    }
+
+    return dest;
 }
 
 // Pointer aliasing is okay, because we keep the buffers

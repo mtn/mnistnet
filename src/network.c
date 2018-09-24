@@ -345,7 +345,7 @@ void stochastic_gradient_descent(Network* net, MnistData* training_data,
         }
 
         if (test_data != NULL) {
-            fprintf(stderr, "Epoch %d: %d / %d\n", j, evaluate(net, test_data),
+            fprintf(stderr, "Epoch %d result: %d / %d\n", j, evaluate(net, test_data),
                     test_data->count);
         } else {
             fprintf(stderr, "Epoch %d complete\n", j);

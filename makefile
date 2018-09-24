@@ -33,7 +33,7 @@ test: clean debug_mode $(test_obj) $(lib)
 	$(CC) -o $@ $(test_obj) $(CFLAGS)
 	./test
 
-debug: clean exe_mode debug_mode $(exe_obj) $(lib)
+debug: clean debug_mode $(exe_obj) $(lib)
 	$(CC) -o $@ $(exe_obj) $(CFLAGS)
 
 debug_mode:
